@@ -201,20 +201,28 @@ export class Game {
   }
 
   private restartGame(): void {
-    // Clean up current game
+    // Clean up current game - destroy all game objects
     this.ninja?.destroy();
     this.ninja = null;
 
+    // Destroy all enemies, obstacles, and shurikens
     this.enemies.forEach((e) => e.destroy());
     this.obstacles.forEach((o) => o.destroy());
     this.shurikens.forEach((s) => s.destroy());
 
+    // Clean up shared obstacle textures
+    Obstacle.cleanupTextures();
+
+    // Clear arrays
     this.enemies = [];
     this.obstacles = [];
     this.shurikens = [];
 
     // Clear particles
     this.particleSystem.clear();
+
+    // Force garbage collection hint (browser may or may not honor this)
+    // This helps ensure textures are actually freed from memory
 
     // Hide game over screen
     this.gameOverScreen.classList.add("hidden");
@@ -286,14 +294,35 @@ export class Game {
       this.nextObstacleSpawn = 120 + Math.random() * 80;
     }
 
-    // Update enemies
-    this.enemies.forEach((enemy) => enemy.update());
+    // Update enemies and remove off-screen ones immediately
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const enemy = this.enemies[i];
+      enemy.update();
+      if (!enemy.active) {
+        enemy.destroy();
+        this.enemies.splice(i, 1);
+      }
+    }
 
-    // Update obstacles
-    this.obstacles.forEach((obstacle) => obstacle.update());
+    // Update obstacles and remove off-screen ones immediately
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      const obstacle = this.obstacles[i];
+      obstacle.update();
+      if (!obstacle.active) {
+        obstacle.destroy();
+        this.obstacles.splice(i, 1);
+      }
+    }
 
-    // Update shurikens
-    this.shurikens.forEach((shuriken) => shuriken.update());
+    // Update shurikens and remove off-screen ones immediately
+    for (let i = this.shurikens.length - 1; i >= 0; i--) {
+      const shuriken = this.shurikens[i];
+      shuriken.update();
+      if (!shuriken.active) {
+        shuriken.destroy();
+        this.shurikens.splice(i, 1);
+      }
+    }
 
     // Check collisions: Shuriken vs Enemy
     for (let i = this.shurikens.length - 1; i >= 0; i--) {
@@ -346,11 +375,6 @@ export class Game {
         }
       }
     }
-
-    // Remove inactive entities
-    this.enemies = this.enemies.filter((e) => e.active);
-    this.obstacles = this.obstacles.filter((o) => o.active);
-    this.shurikens = this.shurikens.filter((s) => s.active);
 
     // Update particles
     this.particleSystem.update();

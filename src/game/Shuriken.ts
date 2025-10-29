@@ -64,9 +64,12 @@ export class Shuriken {
   }
 
   destroy(): void {
-    if (this.sprite.parent) {
-      this.sprite.parent.removeChild(this.sprite);
+    if (this.sprite) {
+      if (this.sprite.parent) {
+        this.sprite.parent.removeChild(this.sprite);
+      }
+      this.sprite.destroy({ children: true });
     }
-    this.sprite.destroy();
+    this.active = false;
   }
 }

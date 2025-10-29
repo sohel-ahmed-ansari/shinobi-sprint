@@ -1,12 +1,16 @@
 import * as PIXI from "pixi.js";
 import type { Position, Bounds } from "./types";
-import runningSheet from "../sprite-sheets/ninja-running.png";
-import jumpingSheet from "../sprite-sheets/ninja-jumping.png";
+import runningSheet from "../assets/sprite-sheets/ninja-running.png";
+import jumpingSheet from "../assets/sprite-sheets/ninja-jumping.png";
 
 export class Ninja {
   private sprite!: PIXI.AnimatedSprite;
   private runningAnimation!: PIXI.AnimatedSprite;
   private jumpingAnimation!: PIXI.AnimatedSprite;
+  private runningFrames: PIXI.Texture[] = [];
+  private jumpingFrames: PIXI.Texture[] = [];
+  private runningTexture!: PIXI.Texture;
+  private jumpingTexture!: PIXI.Texture;
   private position: Position;
   private velocity: number = 0;
   private isJumping: boolean = false;
@@ -33,8 +37,7 @@ export class Ninja {
     await PIXI.Assets.load([runningSheet, jumpingSheet]);
 
     // Load running sprite sheet (vertical, 6 frames, 64x64 each)
-    const runningTexture = PIXI.Texture.from(runningSheet);
-    const runningFrames: PIXI.Texture[] = [];
+    this.runningTexture = PIXI.Texture.from(runningSheet);
 
     for (let i = 0; i < 6; i++) {
       const rect = new PIXI.Rectangle(
@@ -44,20 +47,19 @@ export class Ninja {
         this.frameSize
       );
       const frame = new PIXI.Texture({
-        source: runningTexture.source,
+        source: this.runningTexture.source,
         frame: rect,
       });
-      runningFrames.push(frame);
+      this.runningFrames.push(frame);
     }
 
-    this.runningAnimation = new PIXI.AnimatedSprite(runningFrames);
+    this.runningAnimation = new PIXI.AnimatedSprite(this.runningFrames);
     this.runningAnimation.animationSpeed = 0.15;
     this.runningAnimation.loop = true;
     this.runningAnimation.visible = true;
 
     // Load jumping sprite sheet (vertical, 8 frames, 64x64 each)
-    const jumpingTexture = PIXI.Texture.from(jumpingSheet);
-    const jumpingFrames: PIXI.Texture[] = [];
+    this.jumpingTexture = PIXI.Texture.from(jumpingSheet);
 
     for (let i = 0; i < 8; i++) {
       const rect = new PIXI.Rectangle(
@@ -67,14 +69,14 @@ export class Ninja {
         this.frameSize
       );
       const frame = new PIXI.Texture({
-        source: jumpingTexture.source,
+        source: this.jumpingTexture.source,
         frame: rect,
       });
-      jumpingFrames.push(frame);
+      this.jumpingFrames.push(frame);
     }
 
-    this.jumpingAnimation = new PIXI.AnimatedSprite(jumpingFrames);
-    this.jumpingAnimation.animationSpeed = 0.2;
+    this.jumpingAnimation = new PIXI.AnimatedSprite(this.jumpingFrames);
+    this.jumpingAnimation.animationSpeed = 0.175;
     this.jumpingAnimation.loop = false;
     this.jumpingAnimation.visible = true;
 
@@ -181,17 +183,52 @@ export class Ninja {
   }
 
   destroy(): void {
-    if (this.sprite) {
-      if (this.sprite.parent) {
-        this.sprite.parent.removeChild(this.sprite);
+    // Stop animations
+    if (this.runningAnimation) {
+      this.runningAnimation.stop();
+      if (this.runningAnimation.parent) {
+        this.runningAnimation.parent.removeChild(this.runningAnimation);
       }
-      this.sprite.destroy();
+      this.runningAnimation.destroy({ children: true });
     }
-    if (this.runningAnimation && this.runningAnimation !== this.sprite) {
-      this.runningAnimation.destroy();
+    if (this.jumpingAnimation) {
+      this.jumpingAnimation.stop();
+      if (this.jumpingAnimation.parent) {
+        this.jumpingAnimation.parent.removeChild(this.jumpingAnimation);
+      }
+      this.jumpingAnimation.destroy({ children: true });
     }
-    if (this.jumpingAnimation && this.jumpingAnimation !== this.sprite) {
-      this.jumpingAnimation.destroy();
+
+    // Destroy frame textures
+    this.runningFrames.forEach((frame) => {
+      if (frame && !frame.destroyed) {
+        frame.destroy();
+      }
+    });
+    this.jumpingFrames.forEach((frame) => {
+      if (frame && !frame.destroyed) {
+        frame.destroy();
+      }
+    });
+
+    // Destroy base textures
+    if (this.runningTexture && !this.runningTexture.destroyed) {
+      this.runningTexture.destroy();
     }
+    if (this.jumpingTexture && !this.jumpingTexture.destroyed) {
+      this.jumpingTexture.destroy();
+    }
+
+    // Unload assets from cache
+    PIXI.Assets.unload([runningSheet, jumpingSheet]).catch(() => {
+      // Ignore errors if textures are still in use elsewhere
+    });
+
+    // Clear arrays
+    this.runningFrames = [];
+    this.jumpingFrames = [];
+    this.sprite = null as any;
+    this.runningAnimation = null as any;
+    this.jumpingAnimation = null as any;
   }
 }
