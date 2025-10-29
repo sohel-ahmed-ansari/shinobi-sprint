@@ -38,8 +38,8 @@ export class Game {
 
     this.init().then(() => {
       // Get UI elements
-      this.gameOverScreen = document.querySelector(".game-over-screen")!;
-      this.startScreen = document.querySelector(".start-screen")!;
+      this.gameOverScreen = document.getElementById("game-over-screen")!;
+      this.startScreen = document.getElementById("start-screen")!;
 
       // Setup event listeners
       document
@@ -147,7 +147,8 @@ export class Game {
     this.nextObstacleSpawn = 200; // Delay before first obstacle spawns
 
     // Hide start screen
-    this.startScreen.classList.remove("active");
+    this.startScreen.classList.add("hidden");
+    this.startScreen.classList.remove("flex");
 
     // Create ninja
     this.ninja = new Ninja(this.gameContainer, this.groundLevel);
@@ -172,7 +173,8 @@ export class Game {
     this.particleSystem.clear();
 
     // Hide game over screen
-    this.gameOverScreen.classList.remove("active");
+    this.gameOverScreen.classList.add("hidden");
+    this.gameOverScreen.classList.remove("flex");
 
     // Restart
     this.startGame();
@@ -188,7 +190,8 @@ export class Game {
     if (scoreText) {
       scoreText.textContent = `Final Score: ${this.score}`;
     }
-    this.gameOverScreen.classList.add("active");
+    this.gameOverScreen.classList.remove("hidden");
+    this.gameOverScreen.classList.add("flex");
   }
 
   private gameLoop(): void {

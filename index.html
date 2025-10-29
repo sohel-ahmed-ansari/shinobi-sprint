@@ -7,7 +7,42 @@
     <title>Shinobi Runner - Endless Ninja Adventure</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" class="w-screen h-screen">
+      <div
+        class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-linear-to-b from-sky-300 to-white/60 text-white z-2000"
+        id="start-screen"
+      >
+        <h1 class="text-6xl mb-8 drop-shadow-lg text-slate-700">
+          🗡️ Shinobi Runner 🗡️
+        </h1>
+        <p class="text-xl mb-5 text-black">
+          Control your ninja and survive as long as possible!
+        </p>
+        <p class="text-base mt-3 text-black">
+          Press SPACE / W / UP to jump<br />Press Shift/Enter to fire Shurikens
+        </p>
+        <button
+          id="start-button"
+          class="px-10 py-4 text-2xl bg-blue-500 text-white border-none rounded-lg cursor-pointer font-bold transition-all shadow-lg hover:bg-blue-600 hover:scale-105"
+        >
+          Start Game
+        </button>
+      </div>
+
+      <div
+        class="absolute top-0 left-0 w-full h-full hidden flex-col justify-center items-center bg-black/70 text-white text-3xl z-2000"
+        id="game-over-screen"
+      >
+        <h1 class="text-5xl mb-5 drop-shadow-xl">Game Over!</h1>
+        <p>Final Score: 0</p>
+        <button
+          id="restart-button"
+          class="mt-5 px-8 py-4 text-lg bg-blue-500 text-white border-none rounded-lg cursor-pointer font-bold transition-colors hover:bg-blue-600"
+        >
+          Play Again
+        </button>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
