@@ -1,78 +1,170 @@
 import * as PIXI from "pixi.js";
 import type { Position, Bounds } from "./types";
+import runningSheet from "../sprite-sheets/ninja-running.png";
+import jumpingSheet from "../sprite-sheets/ninja-jumping.png";
 
 export class Ninja {
-  private sprite: PIXI.Graphics;
+  private sprite!: PIXI.AnimatedSprite;
+  private runningAnimation!: PIXI.AnimatedSprite;
+  private jumpingAnimation!: PIXI.AnimatedSprite;
   private position: Position;
   private velocity: number = 0;
   private isJumping: boolean = false;
-  private readonly gravity = 0.8;
-  private readonly jumpPower = -15;
+  private readonly gravity = 0.1;
+  private readonly jumpPower = -5;
   private groundLevel: number;
-  public readonly width = 40;
-  public readonly height = 50;
+  private readonly frameSize = 64;
+  public readonly width = 64;
+  public readonly height = 64;
 
   constructor(container: PIXI.Container, groundLevel: number) {
-    this.groundLevel = groundLevel;
+    this.groundLevel = groundLevel + 20;
     // Position ninja so bottom of sprite is at top of grass
     // groundLevel IS the top of the grass
-    this.position = { x: 100, y: groundLevel - this.height };
+    // With anchor at bottom center (0.5, 1), sprite.y should be at groundLevel
+    this.position = { x: 100, y: groundLevel + 20 };
 
-    this.sprite = new PIXI.Graphics();
-    this.drawNinja();
+    // Load sprite sheets and create animations
+    this.loadAnimations(container);
+  }
+
+  private async loadAnimations(container: PIXI.Container): Promise<void> {
+    // Wait for textures to load
+    await PIXI.Assets.load([runningSheet, jumpingSheet]);
+
+    // Load running sprite sheet (vertical, 6 frames, 64x64 each)
+    const runningTexture = PIXI.Texture.from(runningSheet);
+    const runningFrames: PIXI.Texture[] = [];
+
+    for (let i = 0; i < 6; i++) {
+      const rect = new PIXI.Rectangle(
+        0,
+        i * this.frameSize,
+        this.frameSize,
+        this.frameSize
+      );
+      const frame = new PIXI.Texture({
+        source: runningTexture.source,
+        frame: rect,
+      });
+      runningFrames.push(frame);
+    }
+
+    this.runningAnimation = new PIXI.AnimatedSprite(runningFrames);
+    this.runningAnimation.animationSpeed = 0.15;
+    this.runningAnimation.loop = true;
+    this.runningAnimation.visible = true;
+
+    // Load jumping sprite sheet (vertical, 8 frames, 64x64 each)
+    const jumpingTexture = PIXI.Texture.from(jumpingSheet);
+    const jumpingFrames: PIXI.Texture[] = [];
+
+    for (let i = 0; i < 8; i++) {
+      const rect = new PIXI.Rectangle(
+        0,
+        i * this.frameSize,
+        this.frameSize,
+        this.frameSize
+      );
+      const frame = new PIXI.Texture({
+        source: jumpingTexture.source,
+        frame: rect,
+      });
+      jumpingFrames.push(frame);
+    }
+
+    this.jumpingAnimation = new PIXI.AnimatedSprite(jumpingFrames);
+    this.jumpingAnimation.animationSpeed = 0.2;
+    this.jumpingAnimation.loop = false;
+    this.jumpingAnimation.visible = true;
+
+    // Start with running animation
+    this.sprite = this.runningAnimation;
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
+    this.sprite.anchor.x = 0.5; // Anchor at bottom center
+    this.sprite.anchor.y = 1;
+    this.sprite.play();
 
     container.addChild(this.sprite);
   }
 
-  private drawNinja(): void {
-    // Ninja body
-    this.sprite
-      .rect(-this.width / 2, -this.height / 2, this.width, this.height)
-      .fill(0x2c3e50);
-
-    // Ninja head
-    this.sprite.circle(0, -this.height / 2 - 10, 12).fill(0x1a1a2e);
-
-    // Arm (holding shuriken)
-    this.sprite.rect(this.width / 2, -this.height / 4, 20, 8).fill(0x34495e);
-
-    // Leg
-    this.sprite.rect(-this.width / 4, this.height / 2, 8, 15).fill(0x2c3e50);
-
-    // Eye shine
-    this.sprite.circle(3, -this.height / 2 - 8, 2).fill(0xff0000);
+  jump(): void {
+    if (!this.sprite || this.isJumping) return;
+    this.velocity = this.jumpPower;
+    this.isJumping = true;
+    this.switchToJumping();
   }
 
-  jump(): void {
-    if (!this.isJumping) {
-      this.velocity = this.jumpPower;
-      this.isJumping = true;
+  private switchToJumping(): void {
+    if (!this.sprite || !this.jumpingAnimation) return;
+    const container = this.sprite.parent;
+    if (container) {
+      container.removeChild(this.sprite);
+      this.sprite.stop();
+      this.sprite = this.jumpingAnimation;
+      this.sprite.anchor.x = 0.5;
+      this.sprite.anchor.y = 1;
+      this.sprite.x = this.position.x;
+      this.sprite.y = this.position.y;
+      this.sprite.gotoAndPlay(0);
+      container.addChild(this.sprite);
+    }
+  }
+
+  private switchToRunning(): void {
+    if (!this.sprite || !this.runningAnimation) return;
+    const container = this.sprite.parent;
+    if (container) {
+      container.removeChild(this.sprite);
+      this.sprite.stop();
+      this.sprite = this.runningAnimation;
+      this.sprite.anchor.x = 0.5;
+      this.sprite.anchor.y = 1;
+      this.sprite.x = this.position.x;
+      this.sprite.y = this.position.y;
+      this.sprite.play();
+      container.addChild(this.sprite);
     }
   }
 
   update(): void {
+    // Don't update if sprite isn't loaded yet
+    if (!this.sprite) return;
+
     // Apply gravity
     this.velocity += this.gravity;
     this.position.y += this.velocity;
 
     // Ground collision - bottom of ninja should be at top of grass
     // groundLevel is the top of the grass
-    if (this.position.y + this.height >= this.groundLevel) {
-      this.position.y = this.groundLevel - this.height;
+    if (this.position.y >= this.groundLevel) {
+      this.position.y = this.groundLevel;
       this.velocity = 0;
-      this.isJumping = false;
+      if (this.isJumping) {
+        this.isJumping = false;
+        this.switchToRunning();
+      }
     }
 
     // Update sprite position
+    this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
   }
 
   getBounds(): Bounds {
+    if (!this.sprite) {
+      // Return default bounds if sprite not loaded yet
+      return {
+        x: this.position.x - this.width / 2,
+        y: this.position.y - this.height,
+        width: this.width,
+        height: this.height,
+      };
+    }
     return {
       x: this.position.x - this.width / 2,
-      y: this.position.y - this.height / 2,
+      y: this.position.y - this.height,
       width: this.width,
       height: this.height,
     };
@@ -83,9 +175,17 @@ export class Ninja {
   }
 
   destroy(): void {
-    if (this.sprite.parent) {
-      this.sprite.parent.removeChild(this.sprite);
+    if (this.sprite) {
+      if (this.sprite.parent) {
+        this.sprite.parent.removeChild(this.sprite);
+      }
+      this.sprite.destroy();
     }
-    this.sprite.destroy();
+    if (this.runningAnimation && this.runningAnimation !== this.sprite) {
+      this.runningAnimation.destroy();
+    }
+    if (this.jumpingAnimation && this.jumpingAnimation !== this.sprite) {
+      this.jumpingAnimation.destroy();
+    }
   }
 }

@@ -176,7 +176,7 @@ export class Game {
     const ninjaPos = this.ninja.getPosition();
     const shuriken = new Shuriken(this.gameContainer, {
       x: ninjaPos.x + 30,
-      y: ninjaPos.y,
+      y: ninjaPos.y - 30,
     });
 
     this.shurikens.push(shuriken);
