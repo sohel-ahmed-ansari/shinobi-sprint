@@ -17,6 +17,7 @@ export class Game {
   private shurikens: Shuriken[] = [];
   private particleSystem!: ParticleSystem;
   private parallaxBackground!: ParallaxBackground;
+  private grassFloor!: PIXI.Graphics;
 
   private state: GameState = GameStateEnum.MENU;
   private score: number = 0;
@@ -26,6 +27,7 @@ export class Game {
   private lastShurikenTime: number = 0;
   private readonly shurikenCooldown: number = 300; // ms
   private groundLevel!: number;
+  private grassHeight: number = 100;
 
   // UI Elements
   private scoreText!: PIXI.Text;
@@ -65,7 +67,7 @@ export class Game {
 
     document.getElementById("app")!.appendChild(this.app.canvas);
 
-    this.groundLevel = window.innerHeight - 150;
+    this.groundLevel = window.innerHeight - this.grassHeight;
 
     // Create containers
     this.gameContainer = new PIXI.Container();
@@ -78,15 +80,21 @@ export class Game {
       this.gameContainer
     );
 
+    // Create grass floor
+    this.createGrassFloor();
+
     // Create particle system
     this.particleSystem = new ParticleSystem(this.gameContainer);
 
     // Create score text
-    this.scoreText = new PIXI.Text("Score: 0", {
-      fontFamily: "Arial",
-      fontSize: 24,
-      fill: 0xffffff,
-      fontWeight: "bold",
+    this.scoreText = new PIXI.Text({
+      text: "Score: 0",
+      style: {
+        fontFamily: "Arial",
+        fontSize: 24,
+        fill: 0xffffff,
+        fontWeight: "bold",
+      },
     });
     this.scoreText.x = 20;
     this.scoreText.y = 20;
@@ -101,7 +109,41 @@ export class Game {
 
   private handleResize(): void {
     this.app.renderer.resize(window.innerWidth, window.innerHeight);
-    this.groundLevel = window.innerHeight - 150;
+    this.groundLevel = window.innerHeight - this.grassHeight;
+    // Recreate grass floor on resize
+    if (this.grassFloor) {
+      this.gameContainer.removeChild(this.grassFloor);
+      this.grassFloor.destroy();
+    }
+    this.createGrassFloor();
+  }
+
+  private createGrassFloor(): void {
+    const segmentWidth = window.innerWidth;
+    const numSegments = 3; // Number of repeating grass segments
+
+    this.grassFloor = new PIXI.Graphics();
+
+    // Simple flat grass color
+    const grassColor = 0x4a7c59;
+
+    // Create simple repeating grass segments for seamless scrolling
+    for (let seg = 0; seg < numSegments; seg++) {
+      const startX = seg * segmentWidth;
+
+      // Draw simple flat grass rectangle
+      this.grassFloor
+        .rect(startX, this.groundLevel, segmentWidth, this.grassHeight)
+        .fill(grassColor);
+    }
+
+    // Set initial position
+    this.grassFloor.y = 0;
+
+    // Add to container (after background but before game objects)
+    // Move it to appear after parallax background layers (5 layers)
+    this.gameContainer.addChild(this.grassFloor);
+    this.gameContainer.setChildIndex(this.grassFloor, 5);
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
@@ -151,6 +193,11 @@ export class Game {
     this.startScreen.classList.remove("flex");
 
     // Create ninja
+    console.log("groundLevel", this.groundLevel);
+    console.log(
+      "window.innerHeight - grassHeight",
+      window.innerHeight - this.grassHeight
+    );
     this.ninja = new Ninja(this.gameContainer, this.groundLevel);
 
     // Start auto-fire
@@ -202,6 +249,17 @@ export class Game {
 
     // Update parallax background
     this.parallaxBackground.update(this.gameSpeed);
+
+    // Update grass floor scrolling
+    if (this.grassFloor) {
+      this.grassFloor.x -= this.gameSpeed;
+
+      // Reset position when it scrolls off screen for seamless loop
+      const segmentWidth = window.innerWidth;
+      if (this.grassFloor.x <= -segmentWidth) {
+        this.grassFloor.x += segmentWidth;
+      }
+    }
 
     // Update ninja
     this.ninja?.update();
