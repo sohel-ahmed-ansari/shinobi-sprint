@@ -77,7 +77,8 @@ export class Game {
     this.parallaxBackground = new ParallaxBackground(
       window.innerWidth,
       window.innerHeight,
-      this.gameContainer
+      this.gameContainer,
+      this.grassHeight
     );
 
     // Create grass floor

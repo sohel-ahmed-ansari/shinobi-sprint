@@ -6,67 +6,126 @@ export class ParallaxBackground {
   private layers: PIXI.Graphics[] = [];
   private layerCount = 5;
   private screenHeight: number;
+  private screenWidth: number;
 
   constructor(
     screenWidth: number,
     screenHeight: number,
-    container: PIXI.Container
+    container: PIXI.Container,
+    floorHeight: number
   ) {
     this.container = container;
     this.screenHeight = screenHeight;
-    this.createLayers(screenWidth, screenHeight);
+    this.screenWidth = screenWidth;
+    this.createLayers(screenWidth, screenHeight, floorHeight);
   }
 
-  private createLayers(screenWidth: number, screenHeight: number): void {
-    // Daylight palette: distant layers are lighter/desaturated, foreground is richer
+  private createLayers(
+    screenWidth: number,
+    screenHeight: number,
+    floorHeight: number
+  ): void {
+    // Mountain colors: distant layers are lighter blue/purple, closer layers are darker
     const colors = [
-      0xb7e4c7, // Pale mint green (backmost)
-      0x95d5b2, // Light desaturated green
-      0x74c69d, // Soft green
-      0x52b788, // Mid green
-      0x2d6a4f, // Rich forest green (foreground)
+      0xd4e6f1, // Very light blue (farthest mountains)
+      0xb8d4e3, // Light blue-gray
+      0x9bb5c7, // Medium blue-gray
+      0x7d96a8, // Darker blue-gray
+      0x5f7788, // Dark blue-gray (closest mountains)
     ];
 
     for (let i = 0; i < this.layerCount; i++) {
       const layer = new PIXI.Graphics();
       const color = colors[i];
-      const segments = i === 0 ? 3 : 5; // bizarre pattern for parallax effect
 
-      // Create repeating segments
+      // More segments for smoother parallax scrolling
+      const segments = 2 + i; // Distant layers have fewer segments for slower movement
+      const segmentWidth = screenWidth * 1.5; // Make segments wider for seamless scrolling
+
+      // Create mountain silhouettes for each segment
       for (let j = 0; j < segments; j++) {
-        layer.beginFill(color);
+        const startX = j * segmentWidth;
+        // Draw mountains above the grass floor (grass height is 100px)
+        const baseHeight = screenHeight - floorHeight;
 
-        // Create irregular terrain shapes
-        const startX = j * screenWidth + (Math.random() - 0.5) * 100;
-        const variance = 50 + Math.random() * 100;
+        // Create mountain silhouette with peaks and valleys
+        const points: number[] = [];
 
-        layer.drawPolygon([
-          startX,
-          screenHeight - 50 - variance,
-          startX + screenWidth / segments,
-          screenHeight - 30 - variance * 0.8,
-          startX + screenWidth / segments,
-          screenHeight,
-          startX,
-          screenHeight,
-        ]);
+        // Number of peaks in this segment (varies per layer for visual variety)
+        const numPeaks = 1 + Math.floor(Math.random() * 2);
 
-        layer.endFill();
+        // Mountain height varies by layer (distant = shorter, close = taller)
+        // Reduced heights: distant layers 8-15%, close layers 15-25%
+        const maxHeight = screenHeight * 0.4; //(0.08 + i * 0.04);
+        const minHeight = screenHeight * 0.05; //(0.05 + i * 0.02);
 
-        // Add some decorative elements
-        if (Math.random() > 0.7) {
-          const treeX = startX + screenWidth / segments / 2;
-          // Slightly darker trunk/accent for daylight
-          layer.beginFill(color - 0x001010);
-          layer.drawRect(
-            treeX - 5,
-            screenHeight - 80 - variance,
-            10,
-            30 + variance
-          );
-          layer.endFill();
+        // Generate smooth mountain silhouette with gentler slopes
+        // Use more steps between peaks for smoother transitions
+        const stepsPerPeak = 4; // More steps = gentler slopes
+        const stepSize = segmentWidth / (numPeaks * stepsPerPeak);
+        let currentX = startX;
+
+        // Start from base
+        points.push(currentX, baseHeight);
+
+        // Generate peaks and valleys with gradual transitions
+        for (let p = 0; p < numPeaks; p++) {
+          // Calculate peak position
+          const peakX = currentX + stepSize * stepsPerPeak;
+          const peakHeight =
+            minHeight + Math.random() * (maxHeight - minHeight);
+
+          // Create gradual slope up to peak
+          for (let step = 1; step <= stepsPerPeak; step++) {
+            const x = currentX + stepSize * step;
+            // Use a smooth curve for gradual ascent
+            const progress = step / stepsPerPeak;
+            const elevation = peakHeight * (progress * progress); // Quadratic curve for smoothness
+            points.push(x, baseHeight - elevation);
+          }
+
+          // Create gradual slope down from peak
+          if (p < numPeaks - 1) {
+            // Descend to next valley before next peak
+            const nextValleyHeight =
+              minHeight + Math.random() * (maxHeight - minHeight) * 0.4;
+
+            for (let step = 1; step <= stepsPerPeak; step++) {
+              const x = peakX + stepSize * step;
+              // Smooth descent to valley
+              const progress = step / stepsPerPeak;
+              const elevation =
+                peakHeight * (1 - progress) + nextValleyHeight * progress;
+              points.push(x, baseHeight - elevation);
+            }
+            currentX = peakX + stepSize * stepsPerPeak;
+          } else {
+            // Last peak - descend gradually back to base
+            const descentSteps = stepsPerPeak;
+            for (let step = 1; step <= descentSteps; step++) {
+              const x = peakX + stepSize * step;
+              const progress = step / descentSteps;
+              // Smooth descent from peak to base
+              const elevation = peakHeight * (1 - progress * progress);
+              points.push(x, baseHeight - elevation);
+            }
+            currentX = peakX + stepSize * descentSteps;
+          }
         }
+
+        // End at base
+        points.push(startX + segmentWidth, baseHeight);
+
+        // Draw polygon using moveTo/lineTo path, then fill
+        layer.moveTo(points[0], points[1]);
+        for (let i = 2; i < points.length; i += 2) {
+          layer.lineTo(points[i], points[i + 1]);
+        }
+        layer.fill(color);
       }
+
+      // Store layer width for seamless scrolling
+      (layer as any).layerWidth = segmentWidth * segments;
 
       this.layers.push(layer);
       this.container.addChild(layer);
@@ -75,13 +134,18 @@ export class ParallaxBackground {
 
   update(speed: number): void {
     // Move layers at different speeds for parallax effect
+    // Distant layers move slower, closer layers move faster
     for (let i = 0; i < this.layers.length; i++) {
-      const layerSpeed = speed * (0.2 + i * 0.15);
-      this.layers[i].x -= layerSpeed;
+      const layerSpeed = speed * (0.1 + i * 0.2);
+      const layer = this.layers[i];
+      layer.x -= layerSpeed;
 
-      // Reset layer position when it scrolls off screen
-      if (this.layers[i].x <= -this.layers[i].width) {
-        this.layers[i].x = 0;
+      // Get the stored layer width
+      const layerWidth = (layer as any).layerWidth || this.screenWidth * 2;
+
+      // Reset layer position when it scrolls off screen for seamless loop
+      if (layer.x <= -layerWidth) {
+        layer.x += layerWidth;
       }
     }
   }
