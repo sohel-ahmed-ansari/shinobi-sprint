@@ -81,4 +81,11 @@ export class Ninja {
   getPosition(): Position {
     return { ...this.position };
   }
+
+  destroy(): void {
+    if (this.sprite.parent) {
+      this.sprite.parent.removeChild(this.sprite);
+    }
+    this.sprite.destroy();
+  }
 }

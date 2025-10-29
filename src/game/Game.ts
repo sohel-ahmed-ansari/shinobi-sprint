@@ -155,7 +155,7 @@ export class Game {
       e.code === "Enter"
     ) {
       e.preventDefault();
-      this.fireShuriken();
+      this.checkCooldownAndFireShuriken();
     } else if (
       e.code === "Space" ||
       e.code === "KeyW" ||
@@ -194,11 +194,6 @@ export class Game {
     this.startScreen.classList.remove("flex");
 
     // Create ninja
-    console.log("groundLevel", this.groundLevel);
-    console.log(
-      "window.innerHeight - grassHeight",
-      window.innerHeight - this.grassHeight
-    );
     this.ninja = new Ninja(this.gameContainer, this.groundLevel);
 
     // Start auto-fire
@@ -207,6 +202,7 @@ export class Game {
 
   private restartGame(): void {
     // Clean up current game
+    this.ninja?.destroy();
     this.ninja = null;
 
     this.enemies.forEach((e) => e.destroy());
@@ -236,10 +232,18 @@ export class Game {
     // Show game over screen
     const scoreText = this.gameOverScreen.querySelector("p");
     if (scoreText) {
-      scoreText.textContent = `Final Score: ${this.score}`;
+      scoreText.textContent = `Final Score: ${Math.floor(this.score)}`;
     }
     this.gameOverScreen.classList.remove("hidden");
     this.gameOverScreen.classList.add("flex");
+  }
+
+  private checkCooldownAndFireShuriken(): void {
+    const now = Date.now();
+    if (now - this.lastShurikenTime > this.shurikenCooldown) {
+      this.fireShuriken();
+      this.lastShurikenTime = now;
+    }
   }
 
   private gameLoop(): void {
@@ -266,11 +270,7 @@ export class Game {
     this.ninja?.update();
 
     // Auto-fire shurikens at regular intervals
-    /* const now = Date.now();
-    if (now - this.lastShurikenTime > this.shurikenCooldown) {
-      this.fireShuriken();
-      this.lastShurikenTime = now;
-    } */
+    // this.checkCooldownAndFireShuriken();
 
     // Spawn enemies
     this.nextEnemySpawn -= dt;

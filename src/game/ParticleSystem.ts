@@ -42,9 +42,9 @@ export class ParticleSystem {
       };
 
       const sprite = new PIXI.Graphics();
-      sprite.beginFill(particle.color, 0.8);
-      sprite.drawCircle(0, 0, particle.size);
-      sprite.endFill();
+      sprite
+        .circle(0, 0, particle.size)
+        .fill({ color: particle.color, alpha: 0.8 });
       sprite.x = particle.x;
       sprite.y = particle.y;
 
@@ -68,9 +68,9 @@ export class ParticleSystem {
       };
 
       const sprite = new PIXI.Graphics();
-      sprite.beginFill(particle.color, 0.6);
-      sprite.drawCircle(0, 0, particle.size);
-      sprite.endFill();
+      sprite
+        .circle(0, 0, particle.size)
+        .fill({ color: particle.color, alpha: 0.6 });
       sprite.x = particle.x;
       sprite.y = particle.y;
 

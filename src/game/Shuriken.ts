@@ -22,9 +22,6 @@ export class Shuriken {
 
   private drawShuriken(): void {
     // Four-pointed star shape
-    this.sprite.beginFill(0x888888);
-    this.sprite.lineStyle(2, 0x666666);
-
     const size = 8;
     this.sprite.moveTo(0, -size);
     this.sprite.lineTo(size / 3, -size / 3);
@@ -35,8 +32,7 @@ export class Shuriken {
     this.sprite.lineTo(-size, 0);
     this.sprite.lineTo(-size / 3, -size / 3);
     this.sprite.lineTo(0, -size);
-
-    this.sprite.endFill();
+    this.sprite.fill(0x888888).stroke({ width: 2, color: 0x666666 });
   }
 
   update(): void {

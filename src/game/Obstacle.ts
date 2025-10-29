@@ -26,31 +26,26 @@ export class Obstacle {
 
   private drawObstacle(): void {
     // Spike/stake
-    this.sprite.beginFill(0x666666);
-    this.sprite.drawRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height
-    );
-    this.sprite.endFill();
+    this.sprite
+      .rect(-this.width / 2, -this.height / 2, this.width, this.height)
+      .fill(0x666666);
 
     // Pointy tip
-    this.sprite.beginFill(0x555555);
-    this.sprite.drawPolygon([
-      -this.width / 2,
-      -this.height / 2,
-      this.width / 2,
-      -this.height / 2,
-      0,
-      -this.height / 2 - 15,
-    ]);
-    this.sprite.endFill();
+    this.sprite
+      .poly([
+        -this.width / 2,
+        -this.height / 2,
+        this.width / 2,
+        -this.height / 2,
+        0,
+        -this.height / 2 - 15,
+      ])
+      .fill(0x555555);
 
     // Darker shade
-    this.sprite.beginFill(0x444444);
-    this.sprite.drawRect(-this.width / 2, this.height / 2 - 10, this.width, 10);
-    this.sprite.endFill();
+    this.sprite
+      .rect(-this.width / 2, this.height / 2 - 10, this.width, 10)
+      .fill(0x444444);
   }
 
   update(): void {
