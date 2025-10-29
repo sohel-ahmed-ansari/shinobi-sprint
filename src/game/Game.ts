@@ -59,7 +59,7 @@ export class Game {
     await this.app.init({
       width: window.innerWidth,
       height: window.innerHeight,
-      backgroundColor: 0x1a1a2e,
+      backgroundColor: 0x87ceeb,
       antialias: true,
     });
 
@@ -106,8 +106,18 @@ export class Game {
 
   private handleKeyDown(e: KeyboardEvent): void {
     if (this.state !== GameStateEnum.PLAYING) return;
-
-    if (e.code === "Space" || e.code === "KeyW" || e.code === "ArrowUp") {
+    if (
+      e.code === "ShiftRight" ||
+      e.code === "ShiftLeft" ||
+      e.code === "Enter"
+    ) {
+      e.preventDefault();
+      this.fireShuriken();
+    } else if (
+      e.code === "Space" ||
+      e.code === "KeyW" ||
+      e.code === "ArrowUp"
+    ) {
       e.preventDefault();
       this.ninja?.jump();
     }
@@ -194,11 +204,11 @@ export class Game {
     this.ninja?.update();
 
     // Auto-fire shurikens at regular intervals
-    const now = Date.now();
+    /* const now = Date.now();
     if (now - this.lastShurikenTime > this.shurikenCooldown) {
       this.fireShuriken();
       this.lastShurikenTime = now;
-    }
+    } */
 
     // Spawn enemies
     this.nextEnemySpawn -= dt;

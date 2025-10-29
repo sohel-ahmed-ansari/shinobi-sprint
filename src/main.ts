@@ -7,7 +7,7 @@ app.innerHTML = `
   <div class="start-screen active">
     <h1>🗡️ Shinobi Runner 🗡️</h1>
     <p>Control your ninja and survive as long as possible!</p>
-    <p style="font-size: 16px; margin-top: 10px;">Press SPACE / W / UP to jump<br/>Shurikens auto-fire</p>
+    <p style="font-size: 16px; margin-top: 10px;">Press SPACE / W / UP to jump<br/>Press Shift/Enter to fire Shurikens</p>
     <button id="start-button">Start Game</button>
   </div>
   

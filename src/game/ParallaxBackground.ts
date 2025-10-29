@@ -18,12 +18,13 @@ export class ParallaxBackground {
   }
 
   private createLayers(screenWidth: number, screenHeight: number): void {
+    // Daylight palette: distant layers are lighter/desaturated, foreground is richer
     const colors = [
-      0x16213e, // Very dark blue (backmost)
-      0x1a1a3e, // Dark blue-purple
-      0x2d2d4e, // Dark purple
-      0x3a3a5e, // Medium purple
-      0x4a4a7e, // Lighter purple (foreground)
+      0xb7e4c7, // Pale mint green (backmost)
+      0x95d5b2, // Light desaturated green
+      0x74c69d, // Soft green
+      0x52b788, // Mid green
+      0x2d6a4f, // Rich forest green (foreground)
     ];
 
     for (let i = 0; i < this.layerCount; i++) {
@@ -55,7 +56,8 @@ export class ParallaxBackground {
         // Add some decorative elements
         if (Math.random() > 0.7) {
           const treeX = startX + screenWidth / segments / 2;
-          layer.beginFill(color + 0x001010);
+          // Slightly darker trunk/accent for daylight
+          layer.beginFill(color - 0x001010);
           layer.drawRect(
             treeX - 5,
             screenHeight - 80 - variance,
