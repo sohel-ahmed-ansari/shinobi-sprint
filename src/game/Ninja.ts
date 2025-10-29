@@ -14,15 +14,15 @@ export class Ninja {
   private readonly jumpPower = -5;
   private groundLevel: number;
   private readonly frameSize = 64;
-  public readonly width = 64;
-  public readonly height = 64;
+  public readonly width = 128; // 2x the frame size
+  public readonly height = 128;
 
   constructor(container: PIXI.Container, groundLevel: number) {
-    this.groundLevel = groundLevel + 20;
+    this.groundLevel = groundLevel + 40;
     // Position ninja so bottom of sprite is at top of grass
     // groundLevel IS the top of the grass
     // With anchor at bottom center (0.5, 1), sprite.y should be at groundLevel
-    this.position = { x: 100, y: groundLevel + 20 };
+    this.position = { x: 100, y: groundLevel + 40 };
 
     // Load sprite sheets and create animations
     this.loadAnimations(container);
@@ -84,6 +84,8 @@ export class Ninja {
     this.sprite.y = this.position.y;
     this.sprite.anchor.x = 0.5; // Anchor at bottom center
     this.sprite.anchor.y = 1;
+    this.sprite.scale.x = 2; // Scale to 2x size
+    this.sprite.scale.y = 2;
     this.sprite.play();
 
     container.addChild(this.sprite);
@@ -105,6 +107,8 @@ export class Ninja {
       this.sprite = this.jumpingAnimation;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
+      this.sprite.scale.x = 2; // Maintain 2x scale
+      this.sprite.scale.y = 2;
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       this.sprite.gotoAndPlay(0);
@@ -121,6 +125,8 @@ export class Ninja {
       this.sprite = this.runningAnimation;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
+      this.sprite.scale.x = 2; // Maintain 2x scale
+      this.sprite.scale.y = 2;
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       this.sprite.play();
