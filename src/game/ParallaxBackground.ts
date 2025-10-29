@@ -1,12 +1,21 @@
 import * as PIXI from "pixi.js";
 import type { Bounds } from "./types";
 
+interface Cloud {
+  graphics: PIXI.Graphics;
+  speed: number;
+  x: number;
+  width: number;
+}
+
 export class ParallaxBackground {
   private container: PIXI.Container;
   private layers: PIXI.Graphics[] = [];
   private layerCount = 5;
   private screenHeight: number;
   private screenWidth: number;
+  private sun: PIXI.Graphics | null = null;
+  private clouds: Cloud[] = [];
 
   constructor(
     screenWidth: number,
@@ -17,6 +26,8 @@ export class ParallaxBackground {
     this.container = container;
     this.screenHeight = screenHeight;
     this.screenWidth = screenWidth;
+    this.createSun(screenWidth, screenHeight);
+    this.createClouds(screenWidth, screenHeight);
     this.createLayers(screenWidth, screenHeight, floorHeight);
   }
 
@@ -132,6 +143,92 @@ export class ParallaxBackground {
     }
   }
 
+  private createSun(screenWidth: number, screenHeight: number): void {
+    const sun = new PIXI.Graphics();
+    const sunRadius = screenWidth * 0.08;
+    const sunX = screenWidth * 0.75; // Position sun in upper right area
+    const sunY = screenHeight * 0.25; // Position in upper portion of screen
+
+    // Main sun (bright yellow-orange)
+    sun.circle(sunX, sunY, sunRadius);
+    sun.fill(0xffd700);
+
+    // Inner highlight
+    sun.circle(sunX - sunRadius * 0.3, sunY - sunRadius * 0.3, sunRadius * 0.3);
+    sun.fill({ color: 0xffffff, alpha: 0.8 });
+
+    this.sun = sun;
+    // Add sun first so it appears behind mountains
+    this.container.addChild(sun);
+  }
+
+  private createClouds(screenWidth: number, screenHeight: number): void {
+    const cloudCount = 8; // Number of clouds
+    const skyStart = screenHeight * 0.1; // Clouds start at 10% of screen height
+    const skyHeight = screenHeight * 0.5; // Clouds occupy top 50% of screen
+
+    for (let i = 0; i < cloudCount; i++) {
+      const cloud = this.createSingleCloud();
+
+      // Position clouds randomly across the sky
+      const cloudX = Math.random() * screenWidth * 2; // Spread clouds wider
+      const cloudY = skyStart + Math.random() * skyHeight;
+
+      cloud.graphics.x = cloudX;
+      cloud.graphics.y = cloudY;
+
+      // Different speeds for parallax effect (slower = more distant)
+      const speed = 0.02 + Math.random() * 0.05; // Random speed between 0.02 and 0.07
+
+      this.clouds.push({
+        graphics: cloud.graphics,
+        speed: speed,
+        x: cloudX,
+        width: cloud.width,
+      });
+
+      this.container.addChild(cloud.graphics);
+    }
+  }
+
+  private createSingleCloud(): { graphics: PIXI.Graphics; width: number } {
+    const cloud = new PIXI.Graphics();
+    const baseSize = 60 + Math.random() * 80; // Variable cloud size
+    const width = baseSize * 1.5;
+    const height = baseSize * 0.6;
+
+    // Create fluffy cloud using overlapping ovals/ellipses
+    const numShapes = 3 + Math.floor(Math.random() * 3); // 3-5 shapes per cloud
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // White clouds with slight transparency for depth
+    const alpha = 0.8 + Math.random() * 0.2; // 0.7 to 1.0
+
+    for (let i = 0; i < numShapes; i++) {
+      const offsetX = (Math.random() - 0.5) * width * 0.6;
+      const offsetY = (Math.random() - 0.5) * height * 0.6;
+      const baseShapeSize = baseSize * (0.4 + Math.random() * 0.4);
+
+      // Make ellipses oval (always wider than tall)
+      const stretchX = 1.0 + Math.random() * 0.5; // 1.0 to 1.5 (horizontal stretch)
+      const stretchY = 0.5 + Math.random() * 0.4; // 0.5 to 0.9 (vertical stretch, always less than horizontal)
+      const ellipseWidth = baseShapeSize * stretchX;
+      const ellipseHeight = baseShapeSize * stretchY;
+
+      cloud.ellipse(
+        centerX + offsetX,
+        centerY + offsetY,
+        ellipseWidth,
+        ellipseHeight
+      );
+    }
+
+    cloud.fill({ color: 0xffffff, alpha: alpha });
+
+    return { graphics: cloud, width: width };
+  }
+
   update(speed: number): void {
     // Move layers at different speeds for parallax effect
     // Distant layers move slower, closer layers move faster
@@ -146,6 +243,27 @@ export class ParallaxBackground {
       // Reset layer position when it scrolls off screen for seamless loop
       if (layer.x <= -layerWidth) {
         layer.x += layerWidth;
+      }
+    }
+
+    // Move clouds at their individual speeds (slow parallax effect)
+    for (const cloud of this.clouds) {
+      cloud.graphics.x -= speed * cloud.speed;
+      cloud.x = cloud.graphics.x;
+
+      // Reset cloud position when it scrolls off screen (wrap around)
+      if (cloud.x <= -cloud.width) {
+        cloud.x += this.screenWidth * 2 + cloud.width;
+        cloud.graphics.x = cloud.x;
+      }
+    }
+
+    // Sun moves very slowly for subtle parallax effect
+    if (this.sun) {
+      this.sun.x -= speed * 0.01;
+      // Reset sun position when it goes off screen
+      if (this.sun.x <= -this.screenWidth * 0.5) {
+        this.sun.x += this.screenWidth * 2;
       }
     }
   }

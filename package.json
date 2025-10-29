@@ -15,6 +15,7 @@
     "vite": "^7.1.7"
   },
   "dependencies": {
+    "@pixi/filter-glow": "^5.2.1",
     "pixi.js": "^8.14.0"
   }
 }
