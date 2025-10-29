@@ -25,13 +25,13 @@ export class ParallaxBackground {
     screenHeight: number,
     floorHeight: number
   ): void {
-    // Mountain colors: distant layers are lighter blue/purple, closer layers are darker
+    // Mountain colors: mix of blue, pink, purple, and white across layers
     const colors = [
-      0xd4e6f1, // Very light blue (farthest mountains)
-      0xb8d4e3, // Light blue-gray
-      0x9bb5c7, // Medium blue-gray
-      0x7d96a8, // Darker blue-gray
-      0x5f7788, // Dark blue-gray (closest mountains)
+      0xf5f0ff, // Very light white-purple (farthest mountains)
+      0xe6e6ff, // Light blue-white
+      0xffd0e6, // Soft pink
+      0xccb3ff, // Medium purple-blue
+      0xb399e6, // Deep blue-purple (closest mountains)
     ];
 
     for (let i = 0; i < this.layerCount; i++) {
