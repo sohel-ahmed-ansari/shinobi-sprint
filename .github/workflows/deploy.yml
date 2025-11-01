@@ -24,8 +24,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
-      - name: Enable Corepack (activates pnpm from packageManager)
+      - name: Enable Corepack
         run: corepack enable
+
+      - name: Prepare pnpm (Corepack)
+        run: corepack prepare pnpm@10.20.0 --activate
+
+      - name: Check pnpm
+        run: pnpm -v
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
