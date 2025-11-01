@@ -1,6 +1,5 @@
 {
   "name": "shinobi-sprint",
-  "packageManager": "pnpm@10.20.0",
   "private": true,
   "version": "0.0.0",
   "type": "module",
