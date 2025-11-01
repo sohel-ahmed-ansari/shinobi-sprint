@@ -24,11 +24,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.20.0
-          run_install: false
+      - name: Install pnpm
+        run: npm install -g pnpm@10.20.0
 
       - name: Show versions
         run: |
