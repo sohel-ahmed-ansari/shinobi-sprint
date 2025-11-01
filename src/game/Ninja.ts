@@ -18,8 +18,10 @@ export class Ninja {
   private readonly jumpPower = -5;
   private groundLevel: number;
   private readonly frameSize = 64;
-  public readonly width = 128; // 2x the frame size
-  public readonly height = 128;
+  // Actual ninja size inside frame: 26x40 pixels, scaled 2x = 52x80 pixels
+  // Using actual sprite dimensions instead of frame size for accurate collision detection
+  public readonly width = 52; // 26 * 2 (actual sprite width * scale)
+  public readonly height = 80; // 40 * 2 (actual sprite height * scale)
 
   constructor(container: PIXI.Container, groundLevel: number) {
     this.groundLevel = groundLevel + 40;
@@ -161,20 +163,18 @@ export class Ninja {
   }
 
   getBounds(): Bounds {
-    if (!this.sprite) {
-      // Return default bounds if sprite not loaded yet
-      return {
-        x: this.position.x - this.width / 2,
-        y: this.position.y - this.height,
-        width: this.width,
-        height: this.height,
-      };
-    }
+    // Calculate collision bounds based on actual sprite size (26x40) scaled 2x = 52x80
+    // Since sprite is anchored at bottom center (0.5, 1), the bounds are:
+    // - x: centered on position.x (position.x - width/2)
+    // - y: bottom is at position.y, so top is position.y - height
+    const collisionWidth = this.width; // 52 (26 * 2)
+    const collisionHeight = this.height; // 80 (40 * 2)
+
     return {
-      x: this.position.x - this.width / 2,
-      y: this.position.y - this.height,
-      width: this.width,
-      height: this.height,
+      x: this.position.x - collisionWidth / 2,
+      y: this.position.y - collisionHeight,
+      width: collisionWidth,
+      height: collisionHeight,
     };
   }
 
