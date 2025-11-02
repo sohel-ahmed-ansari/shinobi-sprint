@@ -194,11 +194,10 @@ export class Game {
     updateProgress(0.5);
 
     // Load audio assets using @pixi/sound and wait for them to be decoded
-    for (let i = 0; i < Game.AUDIO_ASSETS.length; i++) {
-      const asset = Game.AUDIO_ASSETS[i];
-
-      // Add sound with preload option and wait for it to be fully loaded/decoded
-      await new Promise<void>((resolve, reject) => {
+    let loadedCount = 0;
+    const audioPromises = Game.AUDIO_ASSETS.map((asset) => {
+      return new Promise<void>((resolve, reject) => {
+        // Add sound with preload option and wait for it to be fully loaded/decoded
         sound.add(asset.alias, {
           url: asset.src,
           preload: true, // Ensure audio is preloaded and decoded
@@ -208,25 +207,30 @@ export class Game {
               console.warn(`Failed to load sound ${asset.alias}:`, err);
               reject(err);
             } else {
+              const soundInstance = sound.find(asset.alias);
+
+              // Set volumes using the volume property from AUDIO_ASSETS
+              sound.volume(asset.alias, asset.volume ?? 0.7);
+
+              // Set background music to loop
+              if (asset.alias === "background" && soundInstance) {
+                soundInstance.loop = true;
+              }
+
+              // Update progress based on actual number of loaded assets
+              loadedCount++;
+              updateProgress(
+                0.5 + (loadedCount / Game.AUDIO_ASSETS.length) * 0.5
+              );
+
               resolve(); // Sound is ready to play
             }
           },
         });
       });
+    });
 
-      const soundInstance = sound.find(asset.alias);
-
-      // Set volumes using the volume property from AUDIO_ASSETS
-      sound.volume(asset.alias, asset.volume ?? 0.7);
-
-      // Set background music to loop
-      if (asset.alias === "background" && soundInstance) {
-        soundInstance.loop = true;
-      }
-
-      // Update progress (audio is ~50% of total assets)
-      updateProgress(0.5 + ((i + 1) / Game.AUDIO_ASSETS.length) * 0.5);
-    }
+    await Promise.all(audioPromises);
 
     updateProgress(1);
   }
