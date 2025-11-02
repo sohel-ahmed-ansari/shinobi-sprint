@@ -65,13 +65,13 @@ export class Game {
   ];
 
   private static readonly AUDIO_ASSETS = [
-    { alias: "background", src: backgroundMusicUrl },
-    { alias: "jump", src: jumpSoundUrl },
-    { alias: "shuriken", src: shurikenSoundUrl },
-    { alias: "thud", src: thudSoundUrl },
-    { alias: "enemy-die-1", src: enemyDie1SoundUrl },
-    { alias: "enemy-die-2", src: enemyDie2SoundUrl },
-    { alias: "ninja-dies", src: ninjaDiesSoundUrl },
+    { alias: "background", src: backgroundMusicUrl, volume: 0.2 },
+    { alias: "jump", src: jumpSoundUrl, volume: 0.3 },
+    { alias: "shuriken", src: shurikenSoundUrl, volume: 0.3 },
+    { alias: "thud", src: thudSoundUrl, volume: 1 },
+    { alias: "enemy-die-1", src: enemyDie1SoundUrl, volume: 0.3 },
+    { alias: "enemy-die-2", src: enemyDie2SoundUrl, volume: 0.3 },
+    { alias: "ninja-dies", src: ninjaDiesSoundUrl, volume: 0.3 },
   ];
 
   constructor(_container: HTMLDivElement) {
@@ -216,18 +216,8 @@ export class Game {
 
       const soundInstance = sound.find(asset.alias);
 
-      // Set volumes
-      if (asset.alias === "background") {
-        sound.volume(asset.alias, 0.5);
-      } else if (asset.alias === "jump") {
-        sound.volume(asset.alias, 0.7);
-      } else if (asset.alias === "shuriken") {
-        sound.volume(asset.alias, 0.6);
-      } else if (asset.alias === "thud") {
-        sound.volume(asset.alias, 0.8);
-      } else {
-        sound.volume(asset.alias, 0.7);
-      }
+      // Set volumes using the volume property from AUDIO_ASSETS
+      sound.volume(asset.alias, asset.volume ?? 0.7);
 
       // Set background music to loop
       if (asset.alias === "background" && soundInstance) {
