@@ -44,16 +44,32 @@ export class Game {
       this.startScreen = document.getElementById("start-screen")!;
 
       // Setup event listeners
-      document
-        .getElementById("start-button")
-        ?.addEventListener("click", () => this.startGame());
-      document
-        .getElementById("restart-button")
-        ?.addEventListener("click", () => this.restartGame());
+      const startButton = document.getElementById("start-button");
+      const restartButton = document.getElementById("restart-button");
+
+      if (startButton) {
+        startButton.addEventListener("click", () => this.startGame());
+        startButton.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          this.startGame();
+        });
+      }
+
+      if (restartButton) {
+        restartButton.addEventListener("click", () => this.restartGame());
+        restartButton.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          this.restartGame();
+        });
+      }
 
       // Keyboard controls
       window.addEventListener("keydown", (e) => this.handleKeyDown(e));
       window.addEventListener("keyup", (e) => this.handleKeyUp(e));
+
+      // Touch controls
+      window.addEventListener("touchstart", (e) => this.handleTouchStart(e));
+      window.addEventListener("touchend", (e) => this.handleTouchEnd(e));
     });
   }
 
@@ -168,6 +184,32 @@ export class Game {
 
   private handleKeyUp(_e: KeyboardEvent): void {
     // No longer used - auto-fire is handled in game loop
+  }
+
+  private handleTouchStart(e: TouchEvent): void {
+    if (this.state !== GameStateEnum.PLAYING) return;
+    e.preventDefault();
+
+    // Get first touch point
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    // Determine if touch is on left or right half of screen
+    const screenWidth = window.innerWidth;
+    const touchX = touch.clientX;
+
+    if (touchX < screenWidth / 2) {
+      // Left side - jump
+      this.ninja?.jump();
+    } else {
+      // Right side - throw shuriken
+      this.checkCooldownAndFireShuriken();
+    }
+  }
+
+  private handleTouchEnd(e: TouchEvent): void {
+    // Prevent default to avoid mouse events from being triggered
+    e.preventDefault();
   }
 
   private fireShuriken(): void {
