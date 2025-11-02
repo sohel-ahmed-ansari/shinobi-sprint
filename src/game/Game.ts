@@ -193,10 +193,28 @@ export class Game {
 
     updateProgress(0.5);
 
-    // Load audio assets using @pixi/sound
+    // Load audio assets using @pixi/sound and wait for them to be decoded
     for (let i = 0; i < Game.AUDIO_ASSETS.length; i++) {
       const asset = Game.AUDIO_ASSETS[i];
-      sound.add(asset.alias, asset.src);
+
+      // Add sound with preload option and wait for it to be fully loaded/decoded
+      await new Promise<void>((resolve, reject) => {
+        sound.add(asset.alias, {
+          url: asset.src,
+          preload: true, // Ensure audio is preloaded and decoded
+          loaded: (err, _sound) => {
+            // This callback fires when sound is fully loaded and decoded
+            if (err) {
+              console.warn(`Failed to load sound ${asset.alias}:`, err);
+              reject(err);
+            } else {
+              resolve(); // Sound is ready to play
+            }
+          },
+        });
+      });
+
+      const soundInstance = sound.find(asset.alias);
 
       // Set volumes
       if (asset.alias === "background") {
@@ -212,11 +230,8 @@ export class Game {
       }
 
       // Set background music to loop
-      if (asset.alias === "background") {
-        const bgSound = sound.find(asset.alias);
-        if (bgSound) {
-          bgSound.loop = true;
-        }
+      if (asset.alias === "background" && soundInstance) {
+        soundInstance.loop = true;
       }
 
       // Update progress (audio is ~50% of total assets)
