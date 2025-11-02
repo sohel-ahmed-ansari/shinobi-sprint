@@ -219,18 +219,30 @@ export class Game {
     if (this.state !== GameStateEnum.PLAYING) return;
     e.preventDefault();
 
-    // Get first touch point
-    const touch = e.touches[0];
-    if (!touch) return;
-
-    // Determine if touch is on left or right half of screen
+    // Process all touch points to support multi-touch
     const screenWidth = window.innerWidth;
-    const touchX = touch.clientX;
+    let hasLeftTouch = false;
+    let hasRightTouch = false;
 
-    if (touchX < screenWidth / 2) {
+    // Check all touches to see if we have touches on both sides
+    for (let i = 0; i < e.touches.length; i++) {
+      const touch = e.touches[i];
+      const touchX = touch.clientX;
+
+      if (touchX < screenWidth / 2) {
+        hasLeftTouch = true;
+      } else {
+        hasRightTouch = true;
+      }
+    }
+
+    // Execute actions based on which sides are touched
+    if (hasLeftTouch) {
       // Left side - jump
       this.ninja?.jump();
-    } else {
+    }
+
+    if (hasRightTouch) {
       // Right side - throw shuriken
       this.checkCooldownAndFireShuriken();
     }
