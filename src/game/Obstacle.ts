@@ -17,21 +17,29 @@ const OBSTACLE_DATA: ObstacleData[] = [
   { asset: stoneImage, width: 56, height: 40 },
 ];
 
-const TARGET_HEIGHT = 60; // All obstacles will be scaled to this height
+const BASE_TARGET_HEIGHT = 60; // Base target height for obstacles
 
 export class Obstacle {
   private sprite: PIXI.Sprite;
   private position: Position;
   private readonly speed: number;
   public width: number; // Scaled width
-  public readonly height = TARGET_HEIGHT; // Always 60
+  public height: number; // Scaled height
   public active = true;
   private static obstacleTextures: PIXI.Texture[] = [];
   private static loaded = false;
   private selectedObstacleData: ObstacleData | null = null;
+  private mobileScale: number = 1;
 
-  constructor(container: PIXI.Container, groundLevel: number, speed: number) {
+  constructor(
+    container: PIXI.Container,
+    groundLevel: number,
+    speed: number,
+    mobileScale: number = 1
+  ) {
     this.speed = speed;
+    this.mobileScale = mobileScale;
+    this.height = BASE_TARGET_HEIGHT * mobileScale;
     // Width will be set after loading obstacle (scaled based on aspect ratio)
     this.width = 0;
 
@@ -39,7 +47,7 @@ export class Obstacle {
     // With anchor.y = 1, sprite.y directly represents the bottom edge
     this.position = {
       x: window.innerWidth + 50,
-      y: groundLevel + 20,
+      y: groundLevel + 20 * mobileScale,
     };
 
     // Initialize sprite (will be set in loadObstacle)
@@ -71,8 +79,9 @@ export class Obstacle {
     this.selectedObstacleData = OBSTACLE_DATA[randomIndex];
     const selectedTexture = Obstacle.obstacleTextures[randomIndex];
 
-    // Calculate scale to make height = TARGET_HEIGHT while maintaining aspect ratio
-    const scale = TARGET_HEIGHT / this.selectedObstacleData.height;
+    // Calculate scale to make height = target height while maintaining aspect ratio
+    const targetHeight = BASE_TARGET_HEIGHT * this.mobileScale;
+    const scale = targetHeight / this.selectedObstacleData.height;
     const scaledWidth = this.selectedObstacleData.width * scale;
 
     // Set sprite properties

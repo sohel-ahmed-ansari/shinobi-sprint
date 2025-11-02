@@ -5,11 +5,20 @@ export class Shuriken {
   private sprite: PIXI.Graphics;
   private position: Position;
   private readonly speed = 8;
-  public readonly width = 20;
-  public readonly height = 20;
+  public width: number;
+  public height: number;
   public active = true;
+  private mobileScale: number = 1;
 
-  constructor(container: PIXI.Container, startPosition: Position) {
+  constructor(
+    container: PIXI.Container,
+    startPosition: Position,
+    mobileScale: number = 1
+  ) {
+    this.mobileScale = mobileScale;
+    const baseSize = 20;
+    this.width = baseSize * mobileScale;
+    this.height = baseSize * mobileScale;
     this.position = { ...startPosition };
 
     this.sprite = new PIXI.Graphics();
@@ -22,7 +31,9 @@ export class Shuriken {
 
   private drawShuriken(): void {
     // Four-pointed star shape
-    const size = 8;
+    const baseSize = 8;
+    const size = baseSize * this.mobileScale;
+    const strokeWidth = 2 * this.mobileScale;
     this.sprite.moveTo(0, -size);
     this.sprite.lineTo(size / 3, -size / 3);
     this.sprite.lineTo(size, 0);
@@ -32,7 +43,7 @@ export class Shuriken {
     this.sprite.lineTo(-size, 0);
     this.sprite.lineTo(-size / 3, -size / 3);
     this.sprite.lineTo(0, -size);
-    this.sprite.fill(0x888888).stroke({ width: 2, color: 0x666666 });
+    this.sprite.fill(0x888888).stroke({ width: strokeWidth, color: 0x666666 });
   }
 
   update(): void {

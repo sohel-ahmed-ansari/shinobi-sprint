@@ -4,7 +4,8 @@ import standingImage from "../assets/enemy/enemy-standing.png";
 import jumpingImage from "../assets/enemy/enemy-jumping.png";
 
 export class Enemy {
-  private static readonly ENEMY_SCALE = 0.2; // Scale factor to adjust enemy size (0.5 = 50% of original)
+  private static readonly BASE_ENEMY_SCALE = 0.2; // Base scale factor to adjust enemy size
+  private mobileScale: number = 1;
 
   private sprite: PIXI.Sprite;
   private standingSprite!: PIXI.Sprite;
@@ -24,8 +25,14 @@ export class Enemy {
   public height: number = 0; // Will be set after texture loads
   public active = true;
 
-  constructor(container: PIXI.Container, groundLevel: number, speed: number) {
+  constructor(
+    container: PIXI.Container,
+    groundLevel: number,
+    speed: number,
+    mobileScale: number = 1
+  ) {
     this.speed = speed;
+    this.mobileScale = mobileScale;
     this.position = {
       x: window.innerWidth + 50,
       y: 0, // Will be set after textures load
@@ -43,7 +50,7 @@ export class Enemy {
     this.loadSprites(container, placeholderSprite).then(() => {
       // Set baseY - enemy should sit on ground level (groundLevel is top of grass)
       // With anchor at bottom (1), sprite.y should be at groundLevel
-      this.baseY = groundLevel + 10;
+      this.baseY = groundLevel + 10 * this.mobileScale;
       this.position.y = this.baseY;
       this.sprite.y = this.position.y;
     });
@@ -60,20 +67,21 @@ export class Enemy {
     this.jumpingTexture = PIXI.Texture.from(jumpingImage);
 
     // Create standing sprite
+    const totalScale = Enemy.BASE_ENEMY_SCALE * this.mobileScale;
     this.standingSprite = new PIXI.Sprite(this.standingTexture);
     this.standingSprite.anchor.x = 0.5;
     this.standingSprite.anchor.y = 1; // Anchor at bottom center
-    this.standingSprite.scale.set(Enemy.ENEMY_SCALE);
+    this.standingSprite.scale.set(totalScale);
 
     // Create jumping sprite
     this.jumpingSprite = new PIXI.Sprite(this.jumpingTexture);
     this.jumpingSprite.anchor.x = 0.5;
     this.jumpingSprite.anchor.y = 1; // Anchor at bottom center
-    this.jumpingSprite.scale.set(Enemy.ENEMY_SCALE);
+    this.jumpingSprite.scale.set(totalScale);
 
     // Set dimensions based on scaled texture size
-    this.width = this.standingTexture.width * Enemy.ENEMY_SCALE;
-    this.height = this.standingTexture.height * Enemy.ENEMY_SCALE;
+    this.width = this.standingTexture.width * totalScale;
+    this.height = this.standingTexture.height * totalScale;
 
     // Remove placeholder sprite
     if (placeholderSprite.parent) {
@@ -136,7 +144,8 @@ export class Enemy {
       this.sprite = this.jumpingSprite;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
-      this.sprite.scale.set(Enemy.ENEMY_SCALE); // Maintain scale
+      const totalScale = Enemy.BASE_ENEMY_SCALE * this.mobileScale;
+      this.sprite.scale.set(totalScale); // Maintain scale
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       container.addChild(this.sprite);
@@ -152,7 +161,8 @@ export class Enemy {
       this.sprite = this.standingSprite;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
-      this.sprite.scale.set(Enemy.ENEMY_SCALE); // Maintain scale
+      const totalScale = Enemy.BASE_ENEMY_SCALE * this.mobileScale;
+      this.sprite.scale.set(totalScale); // Maintain scale
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       container.addChild(this.sprite);

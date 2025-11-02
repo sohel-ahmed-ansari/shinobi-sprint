@@ -18,17 +18,28 @@ export class Ninja {
   private readonly jumpPower = -5;
   private groundLevel: number;
   private readonly frameSize = 64;
-  // Actual ninja size inside frame: 26x40 pixels, scaled 2x = 52x80 pixels
+  // Actual ninja size inside frame: 26x40 pixels, scaled 2x = 52x80 pixels (or with mobile scale)
   // Using actual sprite dimensions instead of frame size for accurate collision detection
-  public readonly width = 52; // 26 * 2 (actual sprite width * scale)
-  public readonly height = 80; // 40 * 2 (actual sprite height * scale)
+  private baseScale: number = 2;
+  private mobileScale: number = 1;
+  public width: number; // Will be calculated based on scale
+  public height: number; // Will be calculated based on scale
 
-  constructor(container: PIXI.Container, groundLevel: number) {
-    this.groundLevel = groundLevel + 40;
+  constructor(
+    container: PIXI.Container,
+    groundLevel: number,
+    mobileScale: number = 1
+  ) {
+    this.mobileScale = mobileScale;
+    const totalScale = this.baseScale * this.mobileScale;
+    this.width = 26 * totalScale; // Actual sprite width * total scale
+    this.height = 40 * totalScale; // Actual sprite height * total scale
+    this.groundLevel = groundLevel + 40 * mobileScale;
     // Position ninja so bottom of sprite is at top of grass
     // groundLevel IS the top of the grass
     // With anchor at bottom center (0.5, 1), sprite.y should be at groundLevel
-    this.position = { x: 100, y: groundLevel + 40 };
+    // Scale the x position for mobile (keep ninja closer to left on smaller screens)
+    this.position = { x: 100 * mobileScale, y: groundLevel + 40 * mobileScale };
 
     // Load sprite sheets and create animations
     this.loadAnimations(container);
@@ -88,8 +99,9 @@ export class Ninja {
     this.sprite.y = this.position.y;
     this.sprite.anchor.x = 0.5; // Anchor at bottom center
     this.sprite.anchor.y = 1;
-    this.sprite.scale.x = 2; // Scale to 2x size
-    this.sprite.scale.y = 2;
+    const totalScale = this.baseScale * this.mobileScale;
+    this.sprite.scale.x = totalScale;
+    this.sprite.scale.y = totalScale;
     this.sprite.play();
 
     container.addChild(this.sprite);
@@ -111,8 +123,9 @@ export class Ninja {
       this.sprite = this.jumpingAnimation;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
-      this.sprite.scale.x = 2; // Maintain 2x scale
-      this.sprite.scale.y = 2;
+      const totalScale = this.baseScale * this.mobileScale;
+      this.sprite.scale.x = totalScale;
+      this.sprite.scale.y = totalScale;
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       this.sprite.gotoAndPlay(0);
@@ -129,8 +142,9 @@ export class Ninja {
       this.sprite = this.runningAnimation;
       this.sprite.anchor.x = 0.5;
       this.sprite.anchor.y = 1;
-      this.sprite.scale.x = 2; // Maintain 2x scale
-      this.sprite.scale.y = 2;
+      const totalScale = this.baseScale * this.mobileScale;
+      this.sprite.scale.x = totalScale;
+      this.sprite.scale.y = totalScale;
       this.sprite.x = this.position.x;
       this.sprite.y = this.position.y;
       this.sprite.play();

@@ -28,6 +28,7 @@ export class Game {
   private readonly shurikenCooldown: number = 300; // ms
   private groundLevel!: number;
   private grassHeight: number = 100;
+  private mobileScale: number = 1; // Scale factor for mobile devices
 
   // UI Elements
   private scoreText!: PIXI.Text;
@@ -83,6 +84,20 @@ export class Game {
 
     document.getElementById("app")!.appendChild(this.app.canvas);
 
+    // Calculate mobile scale factor based on screen width
+    // Use 0.7 scale for screens narrower than 768px, gradually scaling down to 0.5 for very small screens
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      // Mobile scale: 0.5 for 320px width, 0.7 for 768px width
+      this.mobileScale = 0.5 + ((screenWidth - 320) / (768 - 320)) * 0.2;
+      this.mobileScale = Math.max(0.5, Math.min(0.7, this.mobileScale)); // Clamp between 0.5 and 0.7
+      // Also scale grass height for mobile
+      this.grassHeight = 100 * this.mobileScale;
+    } else {
+      this.mobileScale = 1;
+      this.grassHeight = 100;
+    }
+
     this.groundLevel = window.innerHeight - this.grassHeight;
 
     // Create containers
@@ -104,17 +119,18 @@ export class Game {
     this.particleSystem = new ParticleSystem(this.gameContainer);
 
     // Create score text
+    const scoreFontSize = 24 * this.mobileScale;
     this.scoreText = new PIXI.Text({
       text: "Score: 0",
       style: {
         fontFamily: "Arial",
-        fontSize: 24,
+        fontSize: scoreFontSize,
         fill: 0xffffff,
         fontWeight: "bold",
       },
     });
-    this.scoreText.x = 20;
-    this.scoreText.y = 20;
+    this.scoreText.x = 20 * this.mobileScale;
+    this.scoreText.y = 20 * this.mobileScale;
     this.app.stage.addChild(this.scoreText);
 
     // Handle window resize
@@ -126,7 +142,20 @@ export class Game {
 
   private handleResize(): void {
     this.app.renderer.resize(window.innerWidth, window.innerHeight);
+
+    // Recalculate mobile scale on resize
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      this.mobileScale = 0.5 + ((screenWidth - 320) / (768 - 320)) * 0.2;
+      this.mobileScale = Math.max(0.5, Math.min(0.7, this.mobileScale));
+      this.grassHeight = 100 * this.mobileScale;
+    } else {
+      this.mobileScale = 1;
+      this.grassHeight = 100;
+    }
+
     this.groundLevel = window.innerHeight - this.grassHeight;
+
     // Recreate grass floor on resize
     if (this.grassFloor) {
       this.gameContainer.removeChild(this.grassFloor);
@@ -216,10 +245,14 @@ export class Game {
     if (!this.ninja || this.state !== GameStateEnum.PLAYING) return;
 
     const ninjaPos = this.ninja.getPosition();
-    const shuriken = new Shuriken(this.gameContainer, {
-      x: ninjaPos.x + 30,
-      y: ninjaPos.y - 60,
-    });
+    const shuriken = new Shuriken(
+      this.gameContainer,
+      {
+        x: ninjaPos.x + 30 * this.mobileScale,
+        y: ninjaPos.y - 60 * this.mobileScale,
+      },
+      this.mobileScale
+    );
 
     this.shurikens.push(shuriken);
   }
@@ -235,8 +268,12 @@ export class Game {
     this.startScreen.classList.add("hidden");
     this.startScreen.classList.remove("flex");
 
-    // Create ninja
-    this.ninja = new Ninja(this.gameContainer, this.groundLevel);
+    // Create ninja with mobile scale
+    this.ninja = new Ninja(
+      this.gameContainer,
+      this.groundLevel,
+      this.mobileScale
+    );
 
     // Start auto-fire
     this.lastShurikenTime = Date.now();
@@ -430,7 +467,8 @@ export class Game {
     const enemy = new Enemy(
       this.gameContainer,
       this.groundLevel,
-      this.gameSpeed
+      this.gameSpeed,
+      this.mobileScale
     );
     this.enemies.push(enemy);
   }
@@ -439,7 +477,8 @@ export class Game {
     const obstacle = new Obstacle(
       this.gameContainer,
       this.groundLevel,
-      this.gameSpeed
+      this.gameSpeed,
+      this.mobileScale
     );
     this.obstacles.push(obstacle);
   }
