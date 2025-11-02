@@ -24,13 +24,16 @@ export class Ninja {
   private mobileScale: number = 1;
   public width: number; // Will be calculated based on scale
   public height: number; // Will be calculated based on scale
+  private onJumpCallback?: () => void; // Callback to play jump sound
 
   constructor(
     container: PIXI.Container,
     groundLevel: number,
-    mobileScale: number = 1
+    mobileScale: number = 1,
+    onJumpCallback?: () => void
   ) {
     this.mobileScale = mobileScale;
+    this.onJumpCallback = onJumpCallback;
     const totalScale = this.baseScale * this.mobileScale;
     this.width = 26 * totalScale; // Actual sprite width * total scale
     this.height = 40 * totalScale; // Actual sprite height * total scale
@@ -112,6 +115,11 @@ export class Ninja {
     this.velocity = this.jumpPower;
     this.isJumping = true;
     this.switchToJumping();
+
+    // Play jump sound
+    if (this.onJumpCallback) {
+      this.onJumpCallback();
+    }
   }
 
   private switchToJumping(): void {

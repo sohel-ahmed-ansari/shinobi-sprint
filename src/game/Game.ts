@@ -8,6 +8,12 @@ import { Shuriken } from "./Shuriken";
 import { ParticleSystem } from "./ParticleSystem";
 import { ParallaxBackground } from "./ParallaxBackground";
 import backgroundMusicUrl from "../assets/sounds/background.mp3";
+import jumpSoundUrl from "../assets/sounds/jump.wav";
+import shurikenSoundUrl from "../assets/sounds/shuriken.wav";
+import thudSoundUrl from "../assets/sounds/thud.wav";
+import enemyDie1SoundUrl from "../assets/sounds/enemy-die-1.wav";
+import enemyDie2SoundUrl from "../assets/sounds/enemy-die-2.wav";
+import ninjaDiesSoundUrl from "../assets/sounds/ninja-dies.wav";
 
 export class Game {
   private app!: PIXI.Application;
@@ -38,6 +44,12 @@ export class Game {
 
   // Audio
   private backgroundMusic!: HTMLAudioElement;
+  private jumpSound!: HTMLAudioElement;
+  private shurikenSound!: HTMLAudioElement;
+  private thudSound!: HTMLAudioElement;
+  private enemyDie1Sound!: HTMLAudioElement;
+  private enemyDie2Sound!: HTMLAudioElement;
+  private ninjaDiesSound!: HTMLAudioElement;
 
   constructor(_container: HTMLDivElement) {
     // Create PIXI app
@@ -148,8 +160,9 @@ export class Game {
     // Handle window resize
     window.addEventListener("resize", () => this.handleResize());
 
-    // Initialize background music
+    // Initialize audio
     this.initBackgroundMusic();
+    this.initSoundEffects();
 
     // Start game loop
     this.app.ticker.add(() => this.gameLoop());
@@ -160,6 +173,67 @@ export class Game {
     this.backgroundMusic.loop = true;
     this.backgroundMusic.volume = 0.5; // Set volume to 50%
     // Note: Audio will start playing when user interacts (required by browsers)
+  }
+
+  private initSoundEffects(): void {
+    // Initialize all sound effects
+    this.jumpSound = new Audio(jumpSoundUrl);
+    this.shurikenSound = new Audio(shurikenSoundUrl);
+    this.thudSound = new Audio(thudSoundUrl);
+    this.enemyDie1Sound = new Audio(enemyDie1SoundUrl);
+    this.enemyDie2Sound = new Audio(enemyDie2SoundUrl);
+    this.ninjaDiesSound = new Audio(ninjaDiesSoundUrl);
+
+    // Set volume for sound effects (can be adjusted)
+    this.jumpSound.volume = 0.7;
+    this.shurikenSound.volume = 0.6;
+    this.thudSound.volume = 0.8;
+    this.enemyDie1Sound.volume = 0.7;
+    this.enemyDie2Sound.volume = 0.7;
+    this.ninjaDiesSound.volume = 0.7;
+  }
+
+  // Public methods for playing sound effects (called from other classes)
+  public playJumpSound(): void {
+    if (this.jumpSound) {
+      this.jumpSound.currentTime = 0; // Reset to start
+      this.jumpSound.play().catch(() => {
+        // Ignore autoplay errors
+      });
+    }
+  }
+
+  public playShurikenSound(): void {
+    if (this.shurikenSound) {
+      this.shurikenSound.currentTime = 0; // Reset to start
+      this.shurikenSound.play().catch(() => {
+        // Ignore autoplay errors
+      });
+    }
+  }
+
+  public playEnemyHitSounds(): void {
+    if (this.thudSound && this.enemyDie1Sound && this.enemyDie2Sound) {
+      // Randomly select one of the enemy die sounds
+      const randomDieSound =
+        Math.random() < 0.5 ? this.enemyDie1Sound : this.enemyDie2Sound;
+
+      // Play thud.wav and randomly selected enemy die sound together
+      this.thudSound.currentTime = 0;
+      randomDieSound.currentTime = 0;
+      this.thudSound.play().catch(() => {});
+      randomDieSound.play().catch(() => {});
+    }
+  }
+
+  public playDeathSound(): void {
+    if (this.thudSound && this.ninjaDiesSound) {
+      // Play both thud.wav and ninja-dies.wav together
+      this.thudSound.currentTime = 0;
+      this.ninjaDiesSound.currentTime = 0;
+      this.thudSound.play().catch(() => {});
+      this.ninjaDiesSound.play().catch(() => {});
+    }
   }
 
   private handleResize(): void {
@@ -278,6 +352,9 @@ export class Game {
   private fireShuriken(): void {
     if (!this.ninja || this.state !== GameStateEnum.PLAYING) return;
 
+    // Play shuriken throw sound
+    this.playShurikenSound();
+
     const ninjaPos = this.ninja.getPosition();
     const shuriken = new Shuriken(
       this.gameContainer,
@@ -302,11 +379,12 @@ export class Game {
     this.startScreen.classList.add("hidden");
     this.startScreen.classList.remove("flex");
 
-    // Create ninja with mobile scale
+    // Create ninja with mobile scale and jump sound callback
     this.ninja = new Ninja(
       this.gameContainer,
       this.groundLevel,
-      this.mobileScale
+      this.mobileScale,
+      () => this.playJumpSound()
     );
 
     // Start auto-fire
@@ -375,6 +453,9 @@ export class Game {
 
     // Stop background music when game ends
     this.stopBackgroundMusic();
+
+    // Play death sound
+    this.playDeathSound();
 
     // Show game over screen
     const scoreText = this.gameOverScreen.querySelector("p");
@@ -476,6 +557,9 @@ export class Game {
           // Hit enemy
           const pos = enemy.getPosition();
           this.particleSystem.createExplosion(pos.x, pos.y, 0xff8800);
+
+          // Play enemy hit sounds
+          this.playEnemyHitSounds();
 
           shuriken.destroy();
           enemy.destroy();
