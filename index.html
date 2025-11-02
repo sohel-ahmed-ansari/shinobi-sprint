@@ -8,8 +8,39 @@
   </head>
   <body>
     <div id="app" class="w-screen h-screen">
+      <!-- Preloader Screen -->
       <div
-        class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-linear-to-b from-sky-300 to-white/60 text-white z-2000"
+        class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-linear-to-b from-sky-300 to-white/60 text-white z-3000"
+        id="preloader-screen"
+      >
+        <div class="relative mb-8 w-[300px]" id="preloader-title-container">
+          <img
+            src="/title.png"
+            alt="Shinobi Runner"
+            class="w-[300px] h-auto opacity-30"
+            id="preloader-title-bg"
+            onload="this.parentElement.style.height = this.offsetHeight + 'px'"
+          />
+          <div
+            class="absolute top-0 left-0 overflow-hidden w-0"
+            id="preloader-title-overlay"
+          >
+            <img
+              src="/title.png"
+              alt="Shinobi Runner"
+              class="block object-cover object-top-left"
+              id="preloader-title-fg"
+            />
+          </div>
+        </div>
+        <p class="text-xl text-black" id="preloader-text">
+          Loading shurikens...
+        </p>
+      </div>
+
+      <!-- Start Screen -->
+      <div
+        class="absolute top-0 left-0 w-full h-full hidden flex-col justify-center items-center bg-linear-to-b from-sky-300 to-white/60 text-white z-2000"
         id="start-screen"
       >
         <h1 class="mb-8 drop-shadow-lg">

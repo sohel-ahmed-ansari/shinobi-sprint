@@ -11,6 +11,9 @@ importers:
       '@pixi/filter-glow':
         specifier: ^5.2.1
         version: 5.2.1(@pixi/core@7.4.3)
+      '@pixi/sound':
+        specifier: ^6.0.1
+        version: 6.0.1(pixi.js@8.14.0)
       pixi.js:
         specifier: ^8.14.0
         version: 8.14.0
@@ -230,6 +233,11 @@ packages:
 
   '@pixi/settings@7.4.3':
     resolution: {integrity: sha512-SmGK8smc0PxRB9nr0UJioEtE9hl4gvj9OedCvZx3bxBwA3omA5BmP3CyhQfN8XJ29+o2OUL01r3zAPVol4l4lA==}
+
+  '@pixi/sound@6.0.1':
+    resolution: {integrity: sha512-hpFlQSScAR2L/CsEoIvDi7s1oGsu8y9Zd742Vd3982N+q3IF2vFuIfV9HN4ryjlGnhCT8yBlEgs1gp4G9Rt9TA==}
+    peerDependencies:
+      pixi.js: ^8.0.0
 
   '@pixi/ticker@7.4.3':
     resolution: {integrity: sha512-tHsAD0iOUb6QSGGw+c8cyRBvxsq/NlfzIFBZLEHhWZ+Bx4a0MmXup6I/yJDGmyPCYE+ctCcAfY13wKAzdiVFgQ==}
@@ -890,6 +898,10 @@ snapshots:
       '@pixi/constants': 7.4.3
       '@types/css-font-loading-module': 0.0.12
       ismobilejs: 1.1.1
+
+  '@pixi/sound@6.0.1(pixi.js@8.14.0)':
+    dependencies:
+      pixi.js: 8.14.0
 
   '@pixi/ticker@7.4.3':
     dependencies:

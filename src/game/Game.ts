@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import { sound } from "@pixi/sound";
 import type { GameState } from "./types";
 import { GameStateEnum } from "./types";
 import { Ninja } from "./Ninja";
@@ -7,6 +8,16 @@ import { Obstacle } from "./Obstacle";
 import { Shuriken } from "./Shuriken";
 import { ParticleSystem } from "./ParticleSystem";
 import { ParallaxBackground } from "./ParallaxBackground";
+
+// Import all image assets
+import runningSheet from "../assets/sprite-sheets/ninja-running.png";
+import jumpingSheet from "../assets/sprite-sheets/ninja-jumping.png";
+import standingImage from "../assets/enemy/enemy-standing.png";
+import jumpingImage from "../assets/enemy/enemy-jumping.png";
+import bamboosImage from "../assets/obstacles/bamboos.png";
+import stoneImage from "../assets/obstacles/stone.png";
+
+// Import all audio assets
 import backgroundMusicUrl from "../assets/sounds/background.mp3";
 import jumpSoundUrl from "../assets/sounds/jump.wav";
 import shurikenSoundUrl from "../assets/sounds/shuriken.wav";
@@ -41,61 +52,178 @@ export class Game {
   private scoreText!: PIXI.Text;
   private gameOverScreen!: HTMLElement;
   private startScreen!: HTMLElement;
+  private preloaderScreen!: HTMLElement;
 
-  // Audio
-  private backgroundMusic!: HTMLAudioElement;
-  private jumpSound!: HTMLAudioElement;
-  private shurikenSound!: HTMLAudioElement;
-  private thudSound!: HTMLAudioElement;
-  private enemyDie1Sound!: HTMLAudioElement;
-  private enemyDie2Sound!: HTMLAudioElement;
-  private ninjaDiesSound!: HTMLAudioElement;
+  // Asset collections
+  private static readonly IMAGE_ASSETS = [
+    { alias: "ninja-running", src: runningSheet },
+    { alias: "ninja-jumping", src: jumpingSheet },
+    { alias: "enemy-standing", src: standingImage },
+    { alias: "enemy-jumping", src: jumpingImage },
+    { alias: "obstacle-bamboos", src: bamboosImage },
+    { alias: "obstacle-stone", src: stoneImage },
+  ];
+
+  private static readonly AUDIO_ASSETS = [
+    { alias: "background", src: backgroundMusicUrl },
+    { alias: "jump", src: jumpSoundUrl },
+    { alias: "shuriken", src: shurikenSoundUrl },
+    { alias: "thud", src: thudSoundUrl },
+    { alias: "enemy-die-1", src: enemyDie1SoundUrl },
+    { alias: "enemy-die-2", src: enemyDie2SoundUrl },
+    { alias: "ninja-dies", src: ninjaDiesSoundUrl },
+  ];
 
   constructor(_container: HTMLDivElement) {
     // Create PIXI app
     this.app = new PIXI.Application();
 
-    this.init().then(() => {
-      // Get UI elements
-      this.gameOverScreen = document.getElementById("game-over-screen")!;
-      this.startScreen = document.getElementById("start-screen")!;
+    // Get UI elements
+    this.preloaderScreen = document.getElementById("preloader-screen")!;
+    this.gameOverScreen = document.getElementById("game-over-screen")!;
+    this.startScreen = document.getElementById("start-screen")!;
 
-      // Setup event listeners
-      const startButton = document.getElementById("start-button");
-      const restartButton = document.getElementById("restart-button");
+    // Start preloading assets
+    this.preloadAssets().then(() => {
+      // Hide preloader and show start screen
+      this.preloaderScreen.classList.add("hidden");
+      this.startScreen.classList.remove("hidden");
+      this.startScreen.classList.add("flex");
 
-      if (startButton) {
-        startButton.addEventListener("click", () => {
-          this.startGame();
-          this.playBackgroundMusic(); // Try to start music on user interaction
-        });
-        startButton.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          this.startGame();
-          this.playBackgroundMusic(); // Try to start music on user interaction
-        });
-      }
+      // Initialize game
+      this.init().then(() => {
+        // Setup event listeners
+        const startButton = document.getElementById("start-button");
+        const restartButton = document.getElementById("restart-button");
 
-      if (restartButton) {
-        restartButton.addEventListener("click", () => {
-          this.restartGame();
-          this.playBackgroundMusic(); // Restart music on user interaction
-        });
-        restartButton.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          this.restartGame();
-          this.playBackgroundMusic(); // Restart music on user interaction
-        });
-      }
+        if (startButton) {
+          startButton.addEventListener("click", () => {
+            this.startGame();
+            this.playBackgroundMusic(); // Try to start music on user interaction
+          });
+          startButton.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            this.startGame();
+            this.playBackgroundMusic(); // Try to start music on user interaction
+          });
+        }
 
-      // Keyboard controls
-      window.addEventListener("keydown", (e) => this.handleKeyDown(e));
-      window.addEventListener("keyup", (e) => this.handleKeyUp(e));
+        if (restartButton) {
+          restartButton.addEventListener("click", () => {
+            this.restartGame();
+            this.playBackgroundMusic(); // Restart music on user interaction
+          });
+          restartButton.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            this.restartGame();
+            this.playBackgroundMusic(); // Restart music on user interaction
+          });
+        }
 
-      // Touch controls
-      window.addEventListener("touchstart", (e) => this.handleTouchStart(e));
-      window.addEventListener("touchend", (e) => this.handleTouchEnd(e));
+        // Keyboard controls
+        window.addEventListener("keydown", (e) => this.handleKeyDown(e));
+        window.addEventListener("keyup", (e) => this.handleKeyUp(e));
+
+        // Touch controls
+        window.addEventListener("touchstart", (e) => this.handleTouchStart(e));
+        window.addEventListener("touchend", (e) => this.handleTouchEnd(e));
+      });
     });
+  }
+
+  private async preloadAssets(): Promise<void> {
+    // Ensure the overlay has a fixed height matching the background image
+    const bgImage = document.getElementById(
+      "preloader-title-bg"
+    ) as HTMLImageElement;
+    const overlay = document.getElementById("preloader-title-overlay");
+    const overlayImg = document.getElementById(
+      "preloader-title-fg"
+    ) as HTMLImageElement;
+    const container = document.getElementById("preloader-title-container");
+
+    if (bgImage && overlay && overlayImg && container) {
+      // Wait for image to load and set fixed height
+      const setHeight = () => {
+        const height = bgImage.offsetHeight;
+        const width = bgImage.offsetWidth;
+        // Set container and overlay to fixed dimensions
+        container.style.height = `${height}px`;
+        overlay.style.height = `${height}px`;
+        // Set overlay image to fixed dimensions (prevent aspect ratio from affecting height)
+        overlayImg.style.width = `${width}px`;
+        overlayImg.style.height = `${height}px`;
+      };
+
+      if (bgImage.complete && bgImage.naturalHeight > 0) {
+        setHeight();
+      } else {
+        bgImage.addEventListener("load", setHeight);
+        // Fallback in case load event doesn't fire
+        setTimeout(() => {
+          if (bgImage.naturalHeight > 0) {
+            setHeight();
+          }
+        }, 100);
+      }
+    }
+
+    const updateProgress = (progress: number) => {
+      // Update preloader UI
+      if (overlay) {
+        overlay.style.width = `${progress * 100}%`;
+      }
+
+      const text = document.getElementById("preloader-text");
+      if (text) {
+        text.textContent = `Loading shurikens... ${Math.floor(
+          progress * 100
+        )}%`;
+      }
+    };
+
+    updateProgress(0);
+
+    // Load image assets
+    const imageAssets = Game.IMAGE_ASSETS.map((asset) => asset.src);
+    await PIXI.Assets.load(imageAssets, (progress) => {
+      // Images are ~50% of total assets
+      updateProgress(progress * 0.5);
+    });
+
+    updateProgress(0.5);
+
+    // Load audio assets using @pixi/sound
+    for (let i = 0; i < Game.AUDIO_ASSETS.length; i++) {
+      const asset = Game.AUDIO_ASSETS[i];
+      sound.add(asset.alias, asset.src);
+
+      // Set volumes
+      if (asset.alias === "background") {
+        sound.volume(asset.alias, 0.5);
+      } else if (asset.alias === "jump") {
+        sound.volume(asset.alias, 0.7);
+      } else if (asset.alias === "shuriken") {
+        sound.volume(asset.alias, 0.6);
+      } else if (asset.alias === "thud") {
+        sound.volume(asset.alias, 0.8);
+      } else {
+        sound.volume(asset.alias, 0.7);
+      }
+
+      // Set background music to loop
+      if (asset.alias === "background") {
+        const bgSound = sound.find(asset.alias);
+        if (bgSound) {
+          bgSound.loop = true;
+        }
+      }
+
+      // Update progress (audio is ~50% of total assets)
+      updateProgress(0.5 + ((i + 1) / Game.AUDIO_ASSETS.length) * 0.5);
+    }
+
+    updateProgress(1);
   }
 
   private async init(): Promise<void> {
@@ -160,80 +288,32 @@ export class Game {
     // Handle window resize
     window.addEventListener("resize", () => this.handleResize());
 
-    // Initialize audio
-    this.initBackgroundMusic();
-    this.initSoundEffects();
-
     // Start game loop
     this.app.ticker.add(() => this.gameLoop());
   }
 
-  private initBackgroundMusic(): void {
-    this.backgroundMusic = new Audio(backgroundMusicUrl);
-    this.backgroundMusic.loop = true;
-    this.backgroundMusic.volume = 0.5; // Set volume to 50%
-    // Note: Audio will start playing when user interacts (required by browsers)
-  }
-
-  private initSoundEffects(): void {
-    // Initialize all sound effects
-    this.jumpSound = new Audio(jumpSoundUrl);
-    this.shurikenSound = new Audio(shurikenSoundUrl);
-    this.thudSound = new Audio(thudSoundUrl);
-    this.enemyDie1Sound = new Audio(enemyDie1SoundUrl);
-    this.enemyDie2Sound = new Audio(enemyDie2SoundUrl);
-    this.ninjaDiesSound = new Audio(ninjaDiesSoundUrl);
-
-    // Set volume for sound effects (can be adjusted)
-    this.jumpSound.volume = 0.7;
-    this.shurikenSound.volume = 0.6;
-    this.thudSound.volume = 0.8;
-    this.enemyDie1Sound.volume = 0.7;
-    this.enemyDie2Sound.volume = 0.7;
-    this.ninjaDiesSound.volume = 0.7;
-  }
-
   // Public methods for playing sound effects (called from other classes)
   public playJumpSound(): void {
-    if (this.jumpSound) {
-      this.jumpSound.currentTime = 0; // Reset to start
-      this.jumpSound.play().catch(() => {
-        // Ignore autoplay errors
-      });
-    }
+    sound.play("jump");
   }
 
   public playShurikenSound(): void {
-    if (this.shurikenSound) {
-      this.shurikenSound.currentTime = 0; // Reset to start
-      this.shurikenSound.play().catch(() => {
-        // Ignore autoplay errors
-      });
-    }
+    sound.play("shuriken");
   }
 
   public playEnemyHitSounds(): void {
-    if (this.thudSound && this.enemyDie1Sound && this.enemyDie2Sound) {
-      // Randomly select one of the enemy die sounds
-      const randomDieSound =
-        Math.random() < 0.5 ? this.enemyDie1Sound : this.enemyDie2Sound;
+    // Randomly select one of the enemy die sounds
+    const randomDieSound = Math.random() < 0.5 ? "enemy-die-1" : "enemy-die-2";
 
-      // Play thud.wav and randomly selected enemy die sound together
-      this.thudSound.currentTime = 0;
-      randomDieSound.currentTime = 0;
-      this.thudSound.play().catch(() => {});
-      randomDieSound.play().catch(() => {});
-    }
+    // Play thud and randomly selected enemy die sound together
+    sound.play("thud");
+    sound.play(randomDieSound);
   }
 
   public playDeathSound(): void {
-    if (this.thudSound && this.ninjaDiesSound) {
-      // Play both thud.wav and ninja-dies.wav together
-      this.thudSound.currentTime = 0;
-      this.ninjaDiesSound.currentTime = 0;
-      this.thudSound.play().catch(() => {});
-      this.ninjaDiesSound.play().catch(() => {});
-    }
+    // Play both thud and ninja-dies sounds together
+    sound.play("thud");
+    sound.play("ninja-dies");
   }
 
   private handleResize(): void {
@@ -395,22 +475,29 @@ export class Game {
   }
 
   private playBackgroundMusic(): void {
-    if (this.backgroundMusic) {
-      // Always reset to beginning when starting/restarting
-      this.backgroundMusic.currentTime = 0;
-      // Try to play, catch errors (some browsers require user interaction first)
-      this.backgroundMusic.play().catch(() => {
-        // Audio play was prevented, likely due to browser autoplay policy
-        // Music will start when user interacts with the game
-        console.log("Background music will start after user interaction");
-      });
+    const bgSound = sound.find("background");
+    if (bgSound) {
+      bgSound.stop();
+      bgSound.speed = 1; // Reset speed
+    }
+    try {
+      const instance = sound.play("background");
+      if (instance && "then" in instance) {
+        instance.catch(() => {
+          // Audio play was prevented, likely due to browser autoplay policy
+          console.log("Background music will start after user interaction");
+        });
+      }
+    } catch (error) {
+      console.log("Background music will start after user interaction");
     }
   }
 
   private stopBackgroundMusic(): void {
-    if (this.backgroundMusic) {
-      this.backgroundMusic.pause();
-      this.backgroundMusic.currentTime = 0; // Reset to beginning
+    sound.stop("background");
+    const bgSound = sound.find("background");
+    if (bgSound && "seek" in bgSound) {
+      (bgSound as any).seek(0);
     }
   }
 

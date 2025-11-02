@@ -60,7 +60,8 @@ export class Enemy {
     container: PIXI.Container,
     placeholderSprite: PIXI.Sprite
   ): Promise<void> {
-    // Load textures
+    // Assets are already preloaded, just get the textures
+    // Wait for textures to be ready (they should already be loaded)
     await PIXI.Assets.load([standingImage, jumpingImage]);
 
     this.standingTexture = PIXI.Texture.from(standingImage);

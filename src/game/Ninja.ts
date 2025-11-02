@@ -49,7 +49,8 @@ export class Ninja {
   }
 
   private async loadAnimations(container: PIXI.Container): Promise<void> {
-    // Wait for textures to load
+    // Assets are already preloaded, just get the textures
+    // Wait for textures to be ready (they should already be loaded)
     await PIXI.Assets.load([runningSheet, jumpingSheet]);
 
     // Load running sprite sheet (vertical, 6 frames, 64x64 each)

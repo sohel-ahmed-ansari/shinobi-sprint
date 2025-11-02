@@ -64,9 +64,11 @@ export class Obstacle {
   }
 
   private async loadObstacle(): Promise<void> {
-    // Load obstacle textures if not already loaded
+    // Assets are already preloaded, just get the textures
+    // Load obstacle textures if not already cached
     if (!Obstacle.loaded) {
       const assetPaths = OBSTACLE_DATA.map((data) => data.asset);
+      // Assets are preloaded, but we need to ensure textures are available
       await PIXI.Assets.load(assetPaths);
       Obstacle.obstacleTextures = OBSTACLE_DATA.map((data) =>
         PIXI.Texture.from(data.asset)
