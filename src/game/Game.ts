@@ -7,6 +7,7 @@ import { Obstacle } from "./Obstacle";
 import { Shuriken } from "./Shuriken";
 import { ParticleSystem } from "./ParticleSystem";
 import { ParallaxBackground } from "./ParallaxBackground";
+import backgroundMusicUrl from "../assets/sounds/background.mp3";
 
 export class Game {
   private app!: PIXI.Application;
@@ -35,6 +36,9 @@ export class Game {
   private gameOverScreen!: HTMLElement;
   private startScreen!: HTMLElement;
 
+  // Audio
+  private backgroundMusic!: HTMLAudioElement;
+
   constructor(_container: HTMLDivElement) {
     // Create PIXI app
     this.app = new PIXI.Application();
@@ -49,18 +53,26 @@ export class Game {
       const restartButton = document.getElementById("restart-button");
 
       if (startButton) {
-        startButton.addEventListener("click", () => this.startGame());
+        startButton.addEventListener("click", () => {
+          this.startGame();
+          this.playBackgroundMusic(); // Try to start music on user interaction
+        });
         startButton.addEventListener("touchstart", (e) => {
           e.preventDefault();
           this.startGame();
+          this.playBackgroundMusic(); // Try to start music on user interaction
         });
       }
 
       if (restartButton) {
-        restartButton.addEventListener("click", () => this.restartGame());
+        restartButton.addEventListener("click", () => {
+          this.restartGame();
+          this.playBackgroundMusic(); // Restart music on user interaction
+        });
         restartButton.addEventListener("touchstart", (e) => {
           e.preventDefault();
           this.restartGame();
+          this.playBackgroundMusic(); // Restart music on user interaction
         });
       }
 
@@ -136,8 +148,18 @@ export class Game {
     // Handle window resize
     window.addEventListener("resize", () => this.handleResize());
 
+    // Initialize background music
+    this.initBackgroundMusic();
+
     // Start game loop
     this.app.ticker.add(() => this.gameLoop());
+  }
+
+  private initBackgroundMusic(): void {
+    this.backgroundMusic = new Audio(backgroundMusicUrl);
+    this.backgroundMusic.loop = true;
+    this.backgroundMusic.volume = 0.5; // Set volume to 50%
+    // Note: Audio will start playing when user interacts (required by browsers)
   }
 
   private handleResize(): void {
@@ -289,6 +311,29 @@ export class Game {
 
     // Start auto-fire
     this.lastShurikenTime = Date.now();
+
+    // Start background music (if not already playing)
+    this.playBackgroundMusic();
+  }
+
+  private playBackgroundMusic(): void {
+    if (this.backgroundMusic) {
+      // Always reset to beginning when starting/restarting
+      this.backgroundMusic.currentTime = 0;
+      // Try to play, catch errors (some browsers require user interaction first)
+      this.backgroundMusic.play().catch(() => {
+        // Audio play was prevented, likely due to browser autoplay policy
+        // Music will start when user interacts with the game
+        console.log("Background music will start after user interaction");
+      });
+    }
+  }
+
+  private stopBackgroundMusic(): void {
+    if (this.backgroundMusic) {
+      this.backgroundMusic.pause();
+      this.backgroundMusic.currentTime = 0; // Reset to beginning
+    }
   }
 
   private restartGame(): void {
@@ -327,6 +372,9 @@ export class Game {
     if (this.state === GameStateEnum.GAME_OVER) return;
 
     this.state = GameStateEnum.GAME_OVER;
+
+    // Stop background music when game ends
+    this.stopBackgroundMusic();
 
     // Show game over screen
     const scoreText = this.gameOverScreen.querySelector("p");
