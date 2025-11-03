@@ -2,7 +2,11 @@
 
 An endless side-scrolling ninja runner game built with TypeScript, PixiJS, and Vite.
 
-### Some background:
+## Live URL
+
+The game is deployed on github pages at https://sohel-ahmed-ansari.github.io/shinobi-sprint/
+
+### Story behind the game:
 
 I started this as something to add to my website sohelansari.com as an easter egg. Eventaually spent more time than I thought and my son wanted more and more things which I kept adding and this is what it became.
 
@@ -13,10 +17,6 @@ As a kid who played a lot of games on Sega, Shinobi games were one of my favouri
 I created an initial setup with vite using typescript and tailwind css and then prompted cursor to create the game by giving very basic idea about the game. Then I kept improving it with a mix of hands on code and cursor prompts, finding assets online and generating some with AI.
 
 I wish I knew graphic designing so I could make characters exactly the way I want. But I did my best with what I had.
-
-## Live URL
-
-The game is deployed on github pages at https://sohel-ahmed-ansari.github.io/shinobi-sprint/
 
 ## 🎮 Game Description
 
