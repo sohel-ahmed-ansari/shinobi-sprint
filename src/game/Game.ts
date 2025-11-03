@@ -53,6 +53,12 @@ export class Game {
   private gameOverScreen!: HTMLElement;
   private startScreen!: HTMLElement;
   private preloaderScreen!: HTMLElement;
+  private bgMusicToggleButton!: HTMLElement;
+  private soundEffectsToggleButton!: HTMLElement;
+
+  // Audio state
+  private bgMusicMuted: boolean = false;
+  private soundEffectsMuted: boolean = false;
 
   // Asset collections
   private static readonly IMAGE_ASSETS = [
@@ -65,7 +71,7 @@ export class Game {
   ];
 
   private static readonly AUDIO_ASSETS = [
-    { alias: "background", src: backgroundMusicUrl, volume: 0.2 },
+    { alias: "background", src: backgroundMusicUrl, volume: 0.3 },
     { alias: "jump", src: jumpSoundUrl, volume: 0.3 },
     { alias: "shuriken", src: shurikenSoundUrl, volume: 0.3 },
     { alias: "thud", src: thudSoundUrl, volume: 1 },
@@ -82,6 +88,10 @@ export class Game {
     this.preloaderScreen = document.getElementById("preloader-screen")!;
     this.gameOverScreen = document.getElementById("game-over-screen")!;
     this.startScreen = document.getElementById("start-screen")!;
+    this.bgMusicToggleButton = document.getElementById("bg-music-toggle")!;
+    this.soundEffectsToggleButton = document.getElementById(
+      "sound-effects-toggle"
+    )!;
 
     // Start preloading assets
     this.preloadAssets().then(() => {
@@ -127,8 +137,73 @@ export class Game {
         // Touch controls
         window.addEventListener("touchstart", (e) => this.handleTouchStart(e));
         window.addEventListener("touchend", (e) => this.handleTouchEnd(e));
+
+        // Audio toggle buttons
+        this.setupAudioToggleButtons();
       });
     });
+  }
+
+  private setupAudioToggleButtons(): void {
+    // Background music toggle
+    this.bgMusicToggleButton.addEventListener("click", () => {
+      this.toggleBackgroundMusic();
+    });
+    this.bgMusicToggleButton.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      this.toggleBackgroundMusic();
+    });
+
+    // Sound effects toggle
+    this.soundEffectsToggleButton.addEventListener("click", () => {
+      this.toggleSoundEffects();
+    });
+    this.soundEffectsToggleButton.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      this.toggleSoundEffects();
+    });
+  }
+
+  private toggleBackgroundMusic(): void {
+    this.bgMusicMuted = !this.bgMusicMuted;
+    this.updateBgMusicButtonUI();
+
+    if (this.bgMusicMuted) {
+      sound.stop("background");
+    } else {
+      this.playBackgroundMusic();
+    }
+  }
+
+  private toggleSoundEffects(): void {
+    this.soundEffectsMuted = !this.soundEffectsMuted;
+    this.updateSoundEffectsButtonUI();
+  }
+
+  private updateBgMusicButtonUI(): void {
+    const icon = document.getElementById("bg-music-icon");
+    const iconMuted = document.getElementById("bg-music-icon-muted");
+
+    if (this.bgMusicMuted) {
+      icon?.classList.add("hidden");
+      iconMuted?.classList.remove("hidden");
+    } else {
+      icon?.classList.remove("hidden");
+      iconMuted?.classList.add("hidden");
+    }
+  }
+
+  private updateSoundEffectsButtonUI(): void {
+    const icon = document.getElementById("sound-effects-icon");
+    const iconMuted = document.getElementById("sound-effects-icon-muted");
+
+    if (this.soundEffectsMuted) {
+      icon?.classList.add("hidden");
+      iconMuted?.classList.remove("hidden");
+    } else {
+      icon?.classList.remove("hidden");
+      iconMuted?.classList.add("hidden");
+    }
   }
 
   private async preloadAssets(): Promise<void> {
@@ -303,14 +378,17 @@ export class Game {
 
   // Public methods for playing sound effects (called from other classes)
   public playJumpSound(): void {
+    if (this.soundEffectsMuted) return;
     sound.play("jump");
   }
 
   public playShurikenSound(): void {
+    if (this.soundEffectsMuted) return;
     sound.play("shuriken");
   }
 
   public playEnemyHitSounds(): void {
+    if (this.soundEffectsMuted) return;
     // Randomly select one of the enemy die sounds
     const randomDieSound = Math.random() < 0.5 ? "enemy-die-1" : "enemy-die-2";
 
@@ -320,6 +398,7 @@ export class Game {
   }
 
   public playDeathSound(): void {
+    if (this.soundEffectsMuted) return;
     // Play both thud and ninja-dies sounds together
     sound.play("thud");
     sound.play("ninja-dies");
@@ -484,6 +563,8 @@ export class Game {
   }
 
   private playBackgroundMusic(): void {
+    if (this.bgMusicMuted) return;
+
     const bgSound = sound.find("background");
     if (bgSound) {
       bgSound.stop();

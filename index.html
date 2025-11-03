@@ -8,6 +8,48 @@
   </head>
   <body>
     <div id="app" class="w-screen h-screen">
+      <!-- Audio Control Buttons -->
+      <div class="absolute top-4 right-4 z-3000 flex gap-2">
+        <button
+          id="bg-music-toggle"
+          class="w-12 h-12 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-all shadow-lg hover:scale-110 active:scale-95"
+          title="Toggle Background Music"
+          aria-label="Toggle Background Music"
+        >
+          <img
+            id="bg-music-icon"
+            src="/music-icon.svg"
+            alt="Music"
+            class="w-6 h-6"
+          />
+          <img
+            id="bg-music-icon-muted"
+            src="/music-icon-muted.svg"
+            alt="Music Muted"
+            class="w-6 h-6 hidden"
+          />
+        </button>
+        <button
+          id="sound-effects-toggle"
+          class="w-12 h-12 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-all shadow-lg hover:scale-110 active:scale-95"
+          title="Toggle Sound Effects"
+          aria-label="Toggle Sound Effects"
+        >
+          <img
+            id="sound-effects-icon"
+            src="/sound-effects-icon.svg"
+            alt="Sound Effects"
+            class="w-6 h-6"
+          />
+          <img
+            id="sound-effects-icon-muted"
+            src="/sound-effects-icon-muted.svg"
+            alt="Sound Effects Muted"
+            class="w-6 h-6 hidden"
+          />
+        </button>
+      </div>
+
       <!-- Preloader Screen -->
       <div
         class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-linear-to-b from-sky-300 to-white/60 text-white z-3000"
