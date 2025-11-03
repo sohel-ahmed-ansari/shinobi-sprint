@@ -574,7 +574,7 @@ export class Game {
     if (this.state !== GameStateEnum.PLAYING) return;
 
     const dt = this.app.ticker.deltaTime;
-    this.gameSpeed += 0.0001; // Gradually increase difficulty
+    this.gameSpeed += 0.0005; // Gradually increase difficulty
 
     // Update parallax background
     this.parallaxBackground.update(this.gameSpeed);

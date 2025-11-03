@@ -1,6 +1,22 @@
-# 🗡️ Shinobi Runner
+# Shinobi Sprint
 
 An endless side-scrolling ninja runner game built with TypeScript, PixiJS, and Vite.
+
+### Some background:
+
+I started this as something to add to my website sohelansari.com as an easter egg. Eventaually spent more time than I thought and my son wanted more and more things which I kept adding and this is what it became.
+
+I am an experienced frontend developer but I had 0 experience in game development. So this is the first game I have ever built.
+
+As a kid who played a lot of games on Sega, Shinobi games were one of my favourites which is why I went with this idea.
+
+I created an initial setup with vite using typescript and tailwind css and then prompted cursor to create the game by giving very basic idea about the game. Then I kept improving it with a mix of hands on code and cursor prompts, finding assets online and generating some with AI.
+
+I wish I knew graphic designing so I could make characters exactly the way I want. But I did my best with what I had.
+
+## Live URL
+
+The game is deployed on github pages at https://sohel-ahmed-ansari.github.io/shinobi-sprint/
 
 ## 🎮 Game Description
 
@@ -16,14 +32,16 @@ Control your ninja in this fast-paced endless runner! Jump over obstacles, shoot
 ## 🎯 Controls
 
 - **SPACE / W / UP Arrow** - Jump to avoid obstacles
-- Shurikens automatically fire at enemies
+- **Shift/Enter** to fire Shurikens
+- Touch left side of screen to jump
+- Touch right side of screen to throw Shurikens
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
-- pnpm (or npm)
+- Node.js
+- pnpm
 
 ### Installation
 
@@ -46,14 +64,15 @@ pnpm preview
 - **PixiJS 8.x** - Powerful 2D WebGL rendering engine
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
-- **Vanilla CSS** - Styled UI elements
+- **Tailwind CSS** - Utility-first CSS framework
+- **GitHub Pages** - Deployment
+- **Cursor** - Heavily used cursor for development as I had
 
 ## 📁 Project Structure
 
 ```
 src/
 ├── main.ts                    # Game entry point
-├── style.css                  # Game styling
 └── game/
     ├── Game.ts                # Main game controller
     ├── Ninja.ts               # Player character
@@ -61,8 +80,7 @@ src/
     ├── Obstacle.ts            # Static hazards
     ├── Shuriken.ts            # Projectile weapons
     ├── ParticleSystem.ts      # Particle effects
-    ├── ParallaxBackground.ts  # Background layers
-    └── types.ts               # TypeScript types
+    └── ParallaxBackground.ts  # Background layers
 ```
 
 ## 🎨 Game Features
@@ -81,12 +99,4 @@ Game speed gradually increases to keep the challenge escalating.
 
 ### Collision Detection
 
-Precise bounding box collision detection for all game entities.
-
-## 📝 License
-
-MIT
-
-## 🙏 Credits
-
-Built with modern web technologies for optimal performance and development experience.
+Bounding box collision detection for all game entities.
