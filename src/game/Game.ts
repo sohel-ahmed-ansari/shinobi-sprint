@@ -316,7 +316,16 @@ export class Game {
       height: window.innerHeight,
       backgroundColor: 0x87ceeb,
       antialias: true,
+      preference: "webgpu", // Prefer WebGPU if available, fallback to WebGL
     });
+
+    // Log which renderer is being used
+    const rendererType =
+      (this.app.renderer as any).type === "webgpu" ||
+      this.app.renderer.constructor.name === "WebGPURenderer"
+        ? "WebGPU"
+        : "WebGL";
+    console.log(`PixiJS renderer: ${rendererType}`);
 
     document.getElementById("app")!.appendChild(this.app.canvas);
 
