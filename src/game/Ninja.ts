@@ -222,7 +222,7 @@ export class Ninja {
       this.jumpingAnimation.destroy({ children: true });
     }
 
-    // Destroy frame textures
+    // Destroy frame textures (these are not managed by Assets, so safe to destroy)
     this.runningFrames.forEach((frame) => {
       if (frame && !frame.destroyed) {
         frame.destroy();
@@ -234,18 +234,8 @@ export class Ninja {
       }
     });
 
-    // Destroy base textures
-    if (this.runningTexture && !this.runningTexture.destroyed) {
-      this.runningTexture.destroy();
-    }
-    if (this.jumpingTexture && !this.jumpingTexture.destroyed) {
-      this.jumpingTexture.destroy();
-    }
-
-    // Unload assets from cache
-    PIXI.Assets.unload([runningSheet, jumpingSheet]).catch(() => {
-      // Ignore errors if textures are still in use elsewhere
-    });
+    // Don't destroy or unload base textures here - they're shared assets
+    // that may still be in use. Assets will be cleaned up when the game restarts.
 
     // Clear arrays
     this.runningFrames = [];

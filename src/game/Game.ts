@@ -610,8 +610,8 @@ export class Game {
     this.obstacles.forEach((o) => o.destroy());
     this.shurikens.forEach((s) => s.destroy());
 
-    // Clean up shared obstacle textures
-    Obstacle.cleanupTextures();
+    // Don't unload assets - they're preloaded and will be immediately reused
+    // Unloading would cause unnecessary reloads and potential null texture errors
 
     // Clear arrays
     this.enemies = [];

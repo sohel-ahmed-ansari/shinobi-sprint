@@ -138,22 +138,11 @@ export class Obstacle {
   }
 
   // Static method to clean up shared obstacle textures (call on game restart)
+  // Note: Assets are not unloaded here since they're preloaded and immediately reused
   static cleanupTextures(): void {
     if (Obstacle.loaded && Obstacle.obstacleTextures.length > 0) {
-      // Destroy textures
-      Obstacle.obstacleTextures.forEach((texture) => {
-        if (texture && !texture.destroyed) {
-          texture.destroy();
-        }
-      });
-
-      // Unload assets from cache
-      const assetPaths = OBSTACLE_DATA.map((data) => data.asset);
-      PIXI.Assets.unload(assetPaths).catch(() => {
-        // Ignore errors if textures are still in use
-      });
-
-      // Reset state
+      // Don't destroy or unload textures - they're shared assets that will be reused
+      // Just reset the static state (textures will be reused on next obstacle creation)
       Obstacle.obstacleTextures = [];
       Obstacle.loaded = false;
     }

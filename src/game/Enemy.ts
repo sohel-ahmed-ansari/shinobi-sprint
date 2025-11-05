@@ -202,18 +202,8 @@ export class Enemy {
       this.jumpingSprite.destroy({ children: true });
     }
 
-    // Destroy textures
-    if (this.standingTexture && !this.standingTexture.destroyed) {
-      this.standingTexture.destroy();
-    }
-    if (this.jumpingTexture && !this.jumpingTexture.destroyed) {
-      this.jumpingTexture.destroy();
-    }
-
-    // Unload assets from cache
-    PIXI.Assets.unload([standingImage, jumpingImage]).catch(() => {
-      // Ignore errors if textures are still in use elsewhere
-    });
+    // Don't destroy or unload textures here - they're shared assets
+    // that may still be in use by other enemies. Assets will be cleaned up when the game restarts.
 
     this.active = false;
   }
