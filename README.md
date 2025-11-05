@@ -8,7 +8,7 @@ The game is deployed on github pages at https://sohel-ahmed-ansari.github.io/shi
 
 ### Story behind the game:
 
-I started this as something to add to my website sohelansari.com as an easter egg. Eventaually spent more time than I thought and my son wanted more and more things which I kept adding and this is what it became.
+I started this as something to add to my website [sohelansari.com](https://sohelansari.com/). Eventaually spent more time than I thought and my son wanted more and more things which I kept adding and this is what it became.
 
 I am an experienced frontend developer but I had 0 experience in game development. So this is the first game I have ever built.
 
