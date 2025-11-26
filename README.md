@@ -25,7 +25,6 @@ Control your ninja in this fast-paced endless runner! Jump over obstacles, shoot
 - **Parallax scrolling background** with multiple layers
 - **Particle effects** when shurikens hit enemies
 - **Progressive difficulty** - game speed increases over time
-- **Auto-shooting shurikens** at enemies
 - **Collision detection** for obstacles and enemies
 - **Score system** based on survival time and defeated enemies
 
