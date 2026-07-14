@@ -27,7 +27,6 @@ Control your ninja in this fast-paced endless runner! Jump over obstacles, shoot
 - **Progressive difficulty** - game speed increases over time
 - **Collision detection** for obstacles and enemies
 - **Score system** based on survival time and defeated enemies
-- **Installable PWA** - install to your phone/desktop and play offline
 
 ## 🎯 Controls
 
@@ -35,15 +34,6 @@ Control your ninja in this fast-paced endless runner! Jump over obstacles, shoot
 - **Shift/Enter** to fire Shurikens
 - Touch left side of screen to jump
 - Touch right side of screen to throw Shurikens
-
-## 📲 Install as an App (PWA)
-
-Shinobi Sprint is a Progressive Web App, so you can install it to your device's home screen and play it fullscreen and offline.
-
-- **Android / Desktop (Chrome, Edge):** Tap the **Install** button in the top-right corner, or use the browser's install icon in the address bar.
-- **iOS (Safari):** Tap the **Install** button for step-by-step instructions, or use **Share → Add to Home Screen**.
-
-Once installed, the app shell and game assets are cached by a service worker, so the game keeps working without a network connection.
 
 ## 🚀 Getting Started
 
@@ -68,23 +58,12 @@ pnpm build
 pnpm preview
 ```
 
-> The PWA (manifest + service worker) is only generated in production builds, so use `pnpm build && pnpm preview` to test install/offline behavior.
-
-### Regenerating the app icons
-
-The PWA icons in `public/` are generated from the ninja sprite. To regenerate them after changing the source art:
-
-```bash
-node scripts/generate-icons.mjs
-```
-
 ## 🛠️ Tech Stack
 
 - **PixiJS 8.x** - Powerful 2D WebGL rendering engine
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
-- **vite-plugin-pwa** - Installable PWA with offline service-worker caching
 - **GitHub Pages** - Deployment
 - **Cursor** - Heavily used cursor for development as I had
 
@@ -93,7 +72,6 @@ node scripts/generate-icons.mjs
 ```
 src/
 ├── main.ts                    # Game entry point
-├── pwa.ts                     # PWA install button logic
 └── game/
     ├── Game.ts                # Main game controller
     ├── Ninja.ts               # Player character
@@ -102,9 +80,6 @@ src/
     ├── Shuriken.ts            # Projectile weapons
     ├── ParticleSystem.ts      # Particle effects
     └── ParallaxBackground.ts  # Background layers
-
-scripts/
-└── generate-icons.mjs         # Generates PWA icons from the ninja sprite
 ```
 
 ## 🎨 Game Features
