@@ -59,7 +59,16 @@ export function setupInstall(): void {
     showButton();
   }
 
-  installButton.addEventListener("click", async () => {
+  const openIosModal = () => {
+    iosModal?.classList.remove("hidden");
+    iosModal?.classList.add("flex");
+  };
+  const closeIosModal = () => {
+    iosModal?.classList.add("hidden");
+    iosModal?.classList.remove("flex");
+  };
+
+  const triggerInstall = async () => {
     if (deferredPrompt) {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -70,15 +79,27 @@ export function setupInstall(): void {
       return;
     }
 
-    if (isIos() && iosModal) {
-      iosModal.classList.remove("hidden");
-      iosModal.classList.add("flex");
+    if (isIos()) {
+      openIosModal();
     }
+  };
+
+  // The game attaches window-level touch handlers that call preventDefault(),
+  // which cancels the synthesized "click" on touch devices. Like the game's
+  // other on-screen buttons, handle touchstart explicitly and stop it from
+  // bubbling to those listeners.
+  installButton.addEventListener("click", triggerInstall);
+  installButton.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerInstall();
   });
 
-  iosClose?.addEventListener("click", () => {
-    iosModal?.classList.add("hidden");
-    iosModal?.classList.remove("flex");
+  iosClose?.addEventListener("click", closeIosModal);
+  iosClose?.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeIosModal();
   });
 
   window.addEventListener("appinstalled", () => {
